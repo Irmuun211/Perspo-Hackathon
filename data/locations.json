@@ -1,0 +1,5 @@
+{
+  "zuunkharaa": { "name": "Zuunkharaa", "aimag": "Selenge",     "lat": 48.88, "lon": 106.82 },
+  "darkhan":    { "name": "Darkhan",    "aimag": "Darkhan-Uul", "lat": 49.49, "lon": 105.95 },
+  "bulgan":     { "name": "Bulgan",     "aimag": "Bulgan",      "lat": 48.81, "lon": 103.53 }
+}
