@@ -42,6 +42,27 @@ Add a line to `data/locations.json`, for example:
 
 Then run the workflow again (step 3).
 
+## The crop list (data/crops.json)
+
+All 18 crops, the two kinds of rest year and the hand-written example plans live in
+`data/crops.json`. The site reads it when it opens and builds every rotation plan
+from it, so you can add a crop or fix a number without touching the code.
+The top of the file explains each field.
+
+### Adding FAO GAEZ ratings (team task)
+
+Each crop has `"gaez": { "zuunkharaa": null, "darkhan": null, "bulgan": null }`.
+For each crop, look up its suitability on the FAO GAEZ data portal
+(https://gaez.fao.org/, crop suitability theme, rain-fed) at each area's coordinates
+from `data/locations.json`, then replace `null` with the rating in quotes, e.g.
+`"darkhan": "Moderate"`. The rating then shows on the Crops page and in each
+plan's evidence. Leave `null` for crops GAEZ does not cover. Menu names on the
+portal may differ from this description.
+
+GAEZ gives a suitability rating only. The other crop numbers (water need,
+frost-free days, soil, income and feed values) are still rough estimates and are
+labelled that way on the site.
+
 ## Data and limits
 
 - NASA POWER: https://power.larc.nasa.gov/ (daily point API, community `AG`).

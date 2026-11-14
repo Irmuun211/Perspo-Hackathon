@@ -56,6 +56,36 @@
   .lvl button{border:0;border-right:2px solid var(--line);background:var(--paper);padding:7px 4px;font-size:14px}
   .lvl button:last-child{border-right:0}
   .lvl.two{grid-template-columns:1fr 1fr}
+  .feat{display:grid;grid-template-columns:1fr 220px;gap:16px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+  .feat:first-of-type{margin-top:12px}
+  .feat p{margin:2px 0 0;font-size:15px;color:var(--muted)}
+  .featscore .track{height:8px;background:var(--sky);border-radius:999px;overflow:hidden}
+  .featscore .fill{height:100%;background:var(--blue)}
+  .featscore span{display:block;font-weight:700;font-size:15px;margin-top:4px}
+  .featscore small{color:var(--muted);font-size:13px}
+  @media (max-width:560px){ .feat{grid-template-columns:1fr} }
+  .lvl.four{grid-template-columns:repeat(4,1fr)}
+  .hint2{font-size:14px;color:var(--muted);margin:2px 0 6px}
+  .linkbtn{border:0;background:none;padding:0 2px;color:var(--blue);text-decoration:underline;font-size:14px}
+  .opt.first .ratings,.opt.mine .ratings{grid-template-columns:repeat(3,1fr)}
+  .lib{max-width:1100px}
+  .lib > section{margin-top:22px}
+  .lib h2{font-size:22px}
+  .lib .intro{color:var(--muted);max-width:72ch;margin:6px 0 0}
+  .cropgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;margin-top:12px}
+  .crop{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px}
+  .crop h3{font-size:19px}
+  .crop .sum{color:var(--muted);font-size:15px;margin:6px 0 12px}
+  .facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .facts div{background:var(--sky);border-radius:var(--r-sm);padding:8px 10px}
+  .facts span{display:block;font-size:13px;color:var(--muted)}
+  .facts b{font-size:15px}
+  .facts small{display:block;font-size:12px;color:var(--muted)}
+  .facts b.ok{color:#1F5E39} .facts b.mid{color:#7A5A12} .facts b.bad{color:#8E2F26}
+  .mini{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin-top:12px}
+  .mini i{height:14px;border-radius:3px;display:block}
+  .mini i.P{background:#CFD9DF}
+  .minilab{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;font-size:11px;color:var(--muted);text-align:center;margin-top:2px}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
   .chip{border:2px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 12px;font-size:15px;color:var(--muted)}
   .chip[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft);color:var(--blue);font-weight:700}
@@ -134,6 +164,14 @@
   .locbtn:disabled{opacity:.6;cursor:wait}
   .locmsg{font-size:14px;color:var(--muted);margin:0 0 10px}
   .st-ok{background:#DDEFE3;color:#1F5E39}
+  .build{margin-top:28px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px}
+  .build h2{font-size:22px}
+  .picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:14px}
+  .pick{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:15px}
+  .pick select{font:inherit;font-weight:400;padding:9px 10px;border:2px solid var(--line);border-radius:var(--r-sm);background:var(--paper);color:var(--ink)}
+  .opt.mine{border:2px dashed var(--gold);margin-top:16px}
+  .badge.mineb{background:var(--gold-soft);color:#7A5A12}
+  @media (max-width:560px){ .picks{grid-template-columns:1fr} }
   .care{margin-top:24px;font-size:15px;color:var(--muted);max-width:75ch}
   .care b{color:var(--ink)}
 
@@ -176,11 +214,12 @@
   <header class="top">
     <div>
       <h1>Find a crop rotation that fits your farm and your weather</h1>
-      <p>Answer four quick questions. We compare seven rotation plans using NASA climate data for Mongolia's wheat belt.</p>
+      <p x-text="'Answer four quick questions. We compare ' + planCount() + ' rotation plans, built from ' + cropCount() + ' crops, using NASA climate data for Mongolia\'s wheat belt.'"></p>
       <p class="datastat" :class="dataStatus"><span class="dot"></span><span x-text="dataLine()"></span></p>
     </div>
     <nav aria-label="Pages">
       <button :aria-current="tab==='desk' ? 'page' : null" @click="tab='desk'">Compare plans</button>
+      <button :aria-current="tab==='crops' ? 'page' : null" @click="tab='crops'">Crops</button>
       <button :aria-current="tab==='data' ? 'page' : null" @click="tab='data'">How this works</button>
     </nav>
   </header>
@@ -197,7 +236,7 @@
           <div class="choices">
             <template x-for="(l,k) in LOC" :key="k">
               <button class="choice" :aria-pressed="loc===k" @click="loc=k; sel=null">
-                <span><span x-text="l.name"></span><small x-text="l.aimag + ' province'"></small></span><span class="tick"></span>
+                <span><span x-text="l.name"></span><small x-text="k==='mine' ? 'Exact spot from your phone' : l.aimag + ' province'"></small></span><span class="tick"></span>
               </button>
             </template>
           </div>
@@ -254,10 +293,11 @@
               </div>
             </div>
             <div>
-              <div class="name">Is there a buyer near you for…</div>
+              <div class="name">Which crops could you grow and sell?</div>
+              <p class="hint2">Untick any crop with no buyer, seed or equipment near you. <button class="linkbtn" @click="tickAll(true)">Tick all</button> <button class="linkbtn" @click="tickAll(false)">Untick all</button></p>
               <div class="chips">
-                <template x-for="b in BUYERS" :key="b.k">
-                  <button class="chip" :aria-pressed="buyers[b.k]" @click="buyers[b.k]=!buyers[b.k]"><span x-text="buyers[b.k] ? '✓' : '✕'"></span> <span x-text="b.t"></span></button>
+                <template x-for="c in pickable()" :key="c.key">
+                  <button class="chip" :aria-pressed="can[c.key]" @click="can[c.key]=!can[c.key]"><span x-text="can[c.key] ? '✓' : '✕'"></span> <span x-text="c.name"></span></button>
                 </template>
               </div>
             </div>
@@ -276,7 +316,7 @@
           <ul x-show="plainNotes().length">
             <template x-for="n in plainNotes()" :key="n"><li x-text="n"></li></template>
           </ul>
-          <p class="setaside" x-show="hidden().length" x-text="'Set aside because of your field answers: ' + hidden().map(h => PLAIN[h.r.id].name + ' (' + h.why.join(', ') + ')').join('; ') + '.'"></p>
+          <p class="setaside" x-show="asideText()" x-text="asideText()"></p>
         </div>
 
         <!-- lead plan -->
@@ -285,8 +325,8 @@
               <div>
                 <span class="badge first">Closest match to your answers</span>
                 <template x-if="it.r.id==='base'"><span class="badge now" style="margin-left:6px">What many farms do now</span></template>
-                <h3 x-text="PLAIN[it.r.id].name"></h3>
-                <p class="sum" x-text="PLAIN[it.r.id].sum"></p>
+                <h3 x-text="it.r.name"></h3>
+                <p class="sum" x-text="it.r.sum"></p>
                 <div class="match"><div class="track"><div class="fill" :style="'width:'+it.s.total+'%'"></div></div><b class="num" x-text="matchWord(it.s.total)+' · '+Math.round(it.s.total)+' of 100'"></b></div>
 
                 <div class="ratings">
@@ -298,11 +338,11 @@
                 </div>
 
                 <div class="season">
-                  <h4>What the field looks like through the year</h4>
+                  <h4 x-text="'What the field looks like through the ' + it.r.n + ' years'"></h4>
                   <div class="srow mhead"><span></span><template x-for="m in MONTHS"><span x-text="m.slice(0,1)"></span></template></div>
                   <template x-for="(yr,yi) in it.cal" :key="yi">
                     <div class="srow">
-                      <span class="lab" x-text="'Year '+(yi+1)+': '+CROPWORD[it.r.years[yi]]"></span>
+                      <span class="lab" x-text="'Year '+(yi+1)+': '+cropWord(it.r, yi)"></span>
                       <template x-for="(st,mi) in yr" :key="mi">
                         <button class="cell" :class="[cellClass(st,mi), isSel(it.r.id,yi,mi) && 'sel']" :aria-label="MONTHS[mi]+', year '+(yi+1)+': '+plainState(st,mi)" @click="sel={id:it.r.id,y:yi,m:mi}"></button>
                       </template>
@@ -333,8 +373,8 @@
           <template x-for="it in shown().slice(1)" :key="it.r.id">
             <article class="opt">
               <span class="badge" :class="it.r.id==='base' ? 'now' : 'alt'" x-text="it.r.id==='base' ? 'What many farms do now' : 'Also worth a look'"></span>
-              <h3 x-text="PLAIN[it.r.id].name"></h3>
-              <p class="sum" x-text="PLAIN[it.r.id].sum"></p>
+              <h3 x-text="it.r.name"></h3>
+              <p class="sum" x-text="it.r.sum"></p>
               <div class="match"><div class="track"><div class="fill" :style="'width:'+it.s.total+'%'"></div></div><b class="num" x-text="matchWord(it.s.total)+' · '+Math.round(it.s.total)"></b></div>
               <div class="ratings">
                 <template x-for="m in RATE" :key="m.k">
@@ -347,7 +387,7 @@
                 <div class="srow mhead"><span></span><template x-for="m in MONTHS"><span x-text="m.slice(0,1)"></span></template></div>
                 <template x-for="(yr,yi) in it.cal" :key="yi">
                   <div class="srow">
-                    <span class="lab" x-text="'Y'+(yi+1)+' '+CROPWORD[it.r.years[yi]]"></span>
+                    <span class="lab" x-text="'Y'+(yi+1)+' '+cropWord(it.r, yi)"></span>
                     <template x-for="(st,mi) in yr" :key="mi">
                       <button class="cell" :class="[cellClass(st,mi), isSel(it.r.id,yi,mi) && 'sel']" :aria-label="MONTHS[mi]+', year '+(yi+1)+': '+plainState(st,mi)" @click="sel={id:it.r.id,y:yi,m:mi}"></button>
                     </template>
@@ -366,8 +406,112 @@
           </template>
         </div>
 
+
+        <section class="build" x-show="featuredList().length">
+          <h2>How some well-known plans score for you</h2>
+          <p class="sum">These are common or often-recommended plans, shown every time so you can compare.</p>
+          <template x-for="it in featuredList()" :key="it.r.id">
+            <div class="feat">
+              <div><b x-text="it.r.name"></b><p x-text="it.r.sum"></p></div>
+              <div class="featscore"><div class="track"><div class="fill" :style="'width:'+it.s.total+'%'"></div></div><span class="num" x-text="matchWord(it.s.total)+' · '+Math.round(it.s.total)"></span><small class="num" x-text="'ranks ' + it.rank + ' of ' + planCount()"></small></div>
+            </div>
+          </template>
+        </section>
+
+        <section class="build">
+          <h2>Try your own plan</h2>
+          <p class="sum">Choose how many years, pick a crop for each one, and see how it compares.</p>
+          <div class="lvl four" role="group" aria-label="Number of years" style="max-width:420px;margin-top:12px">
+            <template x-for="n in [2,3,4,5]" :key="n"><button :aria-pressed="custom.length===n" @click="setLen(n)" x-text="n + ' years'"></button></template>
+          </div>
+          <div class="picks">
+            <template x-for="(y,i) in custom" :key="i">
+              <label class="pick"><span x-text="'Year ' + (i+1)"></span>
+                <select x-model="custom[i]">
+                  <template x-for="c in buildOptions()" :key="c.k"><option :value="c.k" x-text="c.t" :selected="custom[i]===c.k"></option></template>
+                </select>
+              </label>
+            </template>
+          </div>
+          <template x-for="it in customList()" :key="it.r.name + it.r.n">
+            <article class="opt mine">
+                <span class="badge mineb" x-text="'Your own plan · would rank ' + customRank() + ' of ' + (planCount() + 1)"></span>
+                <h3 x-text="it.r.name"></h3>
+                <p class="sum" x-text="it.r.sum"></p>
+                <div class="match"><div class="track"><div class="fill" :style="'width:'+it.s.total+'%'"></div></div><b class="num" x-text="matchWord(it.s.total)+' · '+Math.round(it.s.total)"></b></div>
+                <div class="ratings">
+                  <template x-for="m in RATE" :key="m.k">
+                    <div class="rate"><span class="t" x-text="m.t"></span>
+                      <span class="w"><span x-text="word(it.s[m.k])"></span><span class="dots"><template x-for="d in 5"><i :class="d <= dots(it.s[m.k]) && 'on'"></i></template></span></span></div>
+                  </template>
+                </div>
+                <div class="season">
+                  <h4>Field through the year</h4>
+                  <div class="srow mhead"><span></span><template x-for="m in MONTHS"><span x-text="m.slice(0,1)"></span></template></div>
+                  <template x-for="(yr,yi) in it.cal" :key="yi">
+                    <div class="srow">
+                      <span class="lab" x-text="'Y'+(yi+1)+' '+cropWord(it.r, yi)"></span>
+                      <template x-for="(st,mi) in yr" :key="mi">
+                        <button class="cell" :class="[cellClass(st,mi), isSel(it.r.id,yi,mi) && 'sel']" :aria-label="MONTHS[mi]+', year '+(yi+1)+': '+plainState(st,mi)" @click="sel={id:it.r.id,y:yi,m:mi}"></button>
+                      </template>
+                    </div>
+                  </template>
+                  <div class="say">
+                    <span x-show="sel && sel.id===it.r.id" x-text="sel && sel.id===it.r.id ? MONTHS[sel.m]+', year '+(sel.y+1)+': '+explainCell(it.r,it.cal,sel.y,sel.m) : ''"></span>
+                    <span x-show="!(sel && sel.id===it.r.id)" style="color:var(--muted)">Tap a month to see what is happening.</span>
+                  </div>
+                </div>
+                <details><summary>Why this plan could work</summary><ul><template x-for="t in cardWhy(it)"><li x-text="t"></li></template></ul></details>
+                <details><summary>What the NASA data shows</summary><ul><template x-for="t in plainEvidence(it)"><li x-text="t"></li></template></ul></details>
+                <details><summary>Good things about it</summary><ul><template x-for="t in it.r.benefits"><li x-text="t"></li></template></ul></details>
+                <details><summary>Check with a local expert</summary><ul><template x-for="t in it.r.unknowns.concat(PLAIN_UNKNOWNS)"><li x-text="t"></li></template></ul></details>
+              </article>
+          </template>
+        </section>
+
         <p class="care"><b>This tool helps you think, it does not decide for you.</b> It does not predict harvests or prices. Your own experience and advice from a local agronomist matter more than any score here. <span x-text="dataStatus==='live' ? 'Weather numbers come from NASA and update automatically every month.' : 'The weather numbers on this copy are NASA data saved on 14 November 2026. On the live site they update automatically every month.'"></span></p>
       </section>
+    </div>
+
+    <!-- ================= CROPS ================= -->
+    <div class="lib" x-show="tab==='crops'">
+      <section style="margin-top:0">
+        <h2 x-text="'The ' + cropCount() + ' crops we compare'"></h2>
+        <p class="intro">Every crop here is sown in spring and has a chance of ripening in Mongolia's short season. "Season" checks each crop against NASA frost data for <b x-text="L.name"></b> in <span x-text="yearWord()"></span>. Change the area or the kind of year on the Compare plans page.</p>
+        <p class="intro">The numbers behind each crop are rough estimates. Ask a local agronomist before trying a crop that is new to you.</p>
+      </section>
+      <template x-for="g in groupList()" :key="g.k">
+        <section>
+          <h2 x-text="g.t"></h2>
+          <div class="cropgrid">
+            <template x-for="c in g.crops" :key="c.key">
+              <article class="crop">
+                <h3 x-text="c.name"></h3>
+                <p class="sum" x-text="c.role"></p>
+                <div class="facts">
+                  <div><span>Season</span><b :class="fit(c).cls" x-text="fit(c).t"></b><small x-text="'needs about ' + c.need + ' frost-free days'"></small></div>
+                  <div><span>Water need</span><b x-text="waterWord(c)"></b></div>
+                  <div><span>Soil</span><b x-text="soilWord(c)"></b></div>
+                  <div><span>Animal feed</span><b x-text="feedWord(c)"></b></div>
+                  <div><span>Hot July</span><b x-text="c.heat ? 'Suffers' : 'Copes'"></b></div>
+                  <div><span>FAO GAEZ rating</span><b x-text="gaezOf(c)"></b></div>
+                </div>
+                <div class="mini" :aria-label="'Field through the year for ' + c.name">
+                  <template x-for="(ch,mi) in c.cal.split('')" :key="mi"><i :class="'cell ' + miniClass(ch,mi)" style="height:14px"></i></template>
+                </div>
+                <div class="minilab"><template x-for="m in MONTHS"><span x-text="m.slice(0,1)"></span></template></div>
+              </article>
+            </template>
+          </div>
+        </section>
+      </template>
+      <div class="key" style="margin-top:18px">
+        <span><i style="background:var(--grow)"></i>Crop growing</span>
+        <span><i style="background:var(--stubble)"></i>Stubble left standing</span>
+        <span><i style="background:var(--bare-sum)"></i>Bare soil in summer</span>
+        <span><i class="cell BW" style="height:14px"></i>Bare soil in the windy season</span>
+        <span><i style="background:#CFD9DF"></i>Depends on last year's crop</span>
+      </div>
     </div>
 
     <!-- ================= HOW THIS WORKS ================= -->
@@ -375,12 +519,13 @@
       <section>
         <h2>How this works, in short</h2>
         <p>For each area, we look at how much rain falls in summer, how many days are free of frost, how hot July gets, and how windy spring is. These come from NASA POWER, a free NASA service that turns satellite and weather-model data into daily weather records.</p>
-        <p>We then check each rotation plan against that weather: does the crop get enough water, will it finish before frost, does it build the soil, does it keep the ground covered in windy months, and can it earn money? Your answers decide which of these count most.</p>
+        <p>We then check each rotation plan against that weather: does the crop get enough water, will it finish before frost, does it build the soil, does it keep the ground covered in windy months, can it earn money, and does it feed animals? Your answers decide which of these count most.</p>
+        <p x-text="'The plans are built automatically: wheat plus every sensible mix of the other ' + (cropCount()-1) + ' crops and two kinds of rest year, in cycles of 2 to 5 years. That gives ' + planCount() + ' plans. A few well-known ones have explanations written by hand. Plans that repeat a crop family back to back are left out, because that builds up pests and diseases.'"></p>
       </section>
 
       <section>
         <h2>How sure can you be?</h2>
-        <p>Weather changes a lot from year to year. That is why you can test a dry year and a short, hot season, not just an average year. Once the full NASA download is loaded, each plan also shows the lowest and highest rain and frost-free days seen in 2001–2025.</p>
+        <p>Weather changes a lot from year to year. That is why you can test a dry year and a short, hot season, not just an average year. Each plan also shows the lowest and highest rain and frost-free days NASA recorded since 2001.</p>
         <p>The plans are compared with simple rules you can check, not a hidden computer model. We chose this so farmers and agronomists can see exactly why a plan comes first and disagree with it where their experience says otherwise.</p>
       </section>
 
@@ -438,7 +583,7 @@
             <thead><tr><th>Data</th><th>Status</th><th>What it tells us</th></tr></thead>
             <tbody>
               <tr><td><b>NASA POWER</b>, <span x-text="meta.start+'–'+meta.end"></span><br><a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">power.larc.nasa.gov</a></td><td><span class="status" :class="dataStatus==='live' ? 'st-ok' : 'st-p'" x-text="dataStatus==='live' ? 'Updated automatically' : 'Saved copy'"></span></td><td>Rain, frost, temperature and wind for each area.</td></tr>
-              <tr><td><b>FAO GAEZ</b> crop suitability<br><a href="https://gaez.fao.org/" target="_blank" rel="noopener">gaez.fao.org</a></td><td><span class="status st-g">Not checked yet</span></td><td>A second, independent check of whether each crop suits each area's climate and soil.</td></tr>
+              <tr><td><b>FAO GAEZ</b> crop suitability<br><a href="https://gaez.fao.org/" target="_blank" rel="noopener">gaez.fao.org</a></td><td><span class="status" :class="gaezCount() ? 'st-ok' : 'st-g'" x-text="gaezCount() ? 'Checked for ' + gaezCount() + ' of ' + cropCount() + ' crops' : 'Not checked yet'"></span></td><td>A second, independent check of whether each crop suits each area's climate and soil. The team looks each crop up and saves the rating in the crop list.</td></tr>
               <tr><td><b>SMAP</b> soil moisture</td><td><span class="status st-g">Not added yet</span></td><td>Would show how much water is stored in the soil. For now we assume a rest year stores a fixed amount.</td></tr>
               <tr><td><b>GPM</b> rainfall</td><td><span class="status st-g">Not added yet</span></td><td>Would give more detailed rain and storm data.</td></tr>
               <tr><td><b>MODIS / Landsat</b> satellite images</td><td><span class="status st-g">Not added yet</span></td><td>Would show which months fields are really green or bare. For now the field-through-the-year strip stands in for it.</td></tr>
@@ -452,21 +597,21 @@
         <details style="border:0;margin:0">
           <summary style="padding:0;font-size:20px">Details for experts: scoring formulas and crop values</summary>
           <p><b>Inputs.</b> R = summer rain (dry-year value if a dry year is chosen). F = days without frost (−12 for a short, hot season). T = July average (+1.5°C for a short, hot season).</p>
-          <p><b>Water.</b> Mean over the 3 years. Crop year: 100 × clamp(((R + carry) ÷ D − 0.45) ÷ 0.55), D = crop water need, carry = 60 mm after a bare rest year, 80 mm after a stubble rest year, 15 mm after peas. Rest year: 85. Watering adds 150 mm. Soil: sandy holds less (carry × 0.6, −20 mm), heavy holds more (carry × 1.2, +10 mm).</p>
+          <p><b>Water.</b> Mean over the years of the cycle. Crop year: 100 × clamp(((R + carry) ÷ D − 0.45) ÷ 0.55), D = crop water need, carry = soil water left by the crop before (60 mm after a bare rest year, 80 mm after a stubble rest year, 10–15 mm after pulses, −15 to −20 mm after sunflower or alfalfa). Rest year: 85. Watering adds 150 mm. Soil: sandy holds less (carry × 0.6, −20 mm), heavy holds more (carry × 1.2, +10 mm).</p>
           <p><b>Frost and heat.</b> Per crop year: clamp(40 + 2 × (F − need)), minus 12 × max(0, T − 18.5) for heat-sensitive crops. Plan = half the worst year + half the average.</p>
-          <p><b>Soil.</b> Mean of the crops' soil values, −10 when a cereal follows a cereal. <b>Ground cover.</b> 100 × (1 − weighted bare months ÷ 30); bare Oct–Mar months count 1, bare Apr–May months count 2; × 1.3 on sandy soil, × 0.85 on heavy soil. <b>Income.</b> Mean of a relative market value (rest year = 0); not a price forecast.</p>
+          <p><b>Soil.</b> Mean of the crops' soil values, −10 when a crop follows one of its own family. <b>Animal feed.</b> Mean of the crops' feed values. <b>Ground cover.</b> 100 × (1 − weighted bare months ÷ (10 × years)); bare Oct–Mar months count 1, bare Apr–May months count 2; × 1.3 on sandy soil, × 0.85 on heavy soil. <b>Income.</b> Mean of a relative market value (rest year = 0); not a price forecast.</p>
           <p><b>Match.</b> Weighted average. Low = 0, Medium = 3, High = 5. Frost and heat always weigh 2. Water weighs double in a dry year. Words: Good ≥ 70, Fair 45–69, Weak &lt; 45.</p>
           <div class="scroll">
             <table class="num">
-              <thead><tr><th>Crop</th><th class="r">Water need</th><th class="r">Frost-free days needed</th><th class="r">Soil</th><th class="r">Income</th><th>Heat-sensitive</th></tr></thead>
+              <thead><tr><th>Crop</th><th class="r">Water need</th><th class="r">Frost-free days needed</th><th class="r">Soil</th><th class="r">Income</th><th class="r">Feed</th><th>Heat-sensitive</th></tr></thead>
               <tbody>
-                <template x-for="(c,k) in CROPS" :key="k">
-                  <tr><td x-text="c.name"></td><td class="r" x-text="c.fallow ? '–' : c.D"></td><td class="r" x-text="c.fallow ? '–' : c.need"></td><td class="r" x-text="c.soil"></td><td class="r" x-text="c.income"></td><td x-text="c.fallow ? '–' : (c.heat ? 'yes' : 'no')"></td></tr>
+                <template x-for="c in allCrops()" :key="c.key">
+                  <tr><td x-text="c.name"></td><td class="r" x-text="c.fallow ? '–' : c.D"></td><td class="r" x-text="c.fallow ? '–' : c.need"></td><td class="r" x-text="c.soil"></td><td class="r" x-text="c.income"></td><td class="r" x-text="c.feed"></td><td x-text="c.fallow ? '–' : (c.heat ? 'yes' : 'no')"></td></tr>
                 </template>
               </tbody>
             </table>
           </div>
-          <p style="color:var(--muted);font-size:15px">Crop values and field calendars are rough classroom estimates for a local agronomist to check and correct.</p>
+          <p style="color:var(--muted);font-size:15px">Crop values and field calendars are rough classroom estimates for a local agronomist to check and correct. They live in one file, data/crops.json, so they can be fixed without touching the code.</p>
         </details>
       </section>
     </div>
@@ -476,66 +621,13 @@
 <script>
 
 /* ==== SAVED COPY of data/climate.json (NASA POWER daily, 2001–2025, AG), saved 2026-11-14. The live site loads the monthly-updated file instead. ==== */
-/* Optional fields: rainMin, rainMax, ffdMin, ffdMax (power_summary.py prints them) and
-   gaez:{ wheat:'…', barley:'…', pea:'…', oat:'…', rape:'…', potato:'…' } copied from gaez.fao.org */
-const LOC = {
+const DEFAULT_LOC = {
   zuunkharaa: { name:'Zuunkharaa', aimag:'Selenge', lat:48.88, lon:106.82, elev:1229, summerRain:221, dryRain:159, ffd:104, julyT:18.1, springWind:2.2, rainMin:77, rainMax:363, ffdMin:75, ffdMax:126 },
   darkhan: { name:'Darkhan', aimag:'Darkhan-Uul', lat:49.49, lon:105.95, elev:912, summerRain:212, dryRain:152, ffd:113, julyT:19.9, springWind:2.9, rainMin:99, rainMax:349, ffdMin:84, ffdMax:134 },
   bulgan: { name:'Bulgan', aimag:'Bulgan', lat:48.81, lon:103.53, elev:1340, summerRain:247, dryRain:187, ffd:105, julyT:17.8, springWind:3.0, rainMin:107, rainMax:379, ffdMin:75, ffdMax:129 }
 };
-
-const CROPS = {
-  wheat:   { name:'Spring wheat',          short:'wheat',   D:300, need:90,  soil:40, income:60, heat:false, cereal:true },
-  barley:  { name:'Spring barley',         short:'barley',  D:270, need:80,  soil:45, income:50, heat:false, cereal:true },
-  pea:     { name:'Field pea',             short:'pea',     D:260, need:80,  soil:85, income:55, heat:true,  cereal:false },
-  oat:     { name:'Fodder oat (hay)',      short:'oat hay', D:280, need:70,  soil:55, income:55, heat:false, cereal:false },
-  rape:    { name:'Rapeseed',              short:'rapeseed',D:330, need:95,  soil:50, income:75, heat:true,  cereal:false },
-  potato:  { name:'Potato',                short:'potato',  D:380, need:100, soil:20, income:95, heat:true,  cereal:false },
-  fallow:  { name:'Clean fallow',          short:'fallow',  fallow:true, carry:60, soil:10, income:0 },
-  nofallow:{ name:'No-till stubble fallow',short:'stub. fallow', fallow:true, carry:80, soil:45, income:0 }
-};
-/* Year templates: P = inherits last year's Dec state; B bare; S stubble/residue; C active canopy */
-const TPL = {
-  wheat:   ['P','P','P','P','B','C','C','C','S','S','S','S'],
-  barley:  ['P','P','P','P','B','C','C','C','S','S','S','S'],
-  pea:     ['P','P','P','P','B','C','C','S','S','S','S','S'],
-  oat:     ['P','P','P','P','P','B','C','C','C','S','S','S'],
-  rape:    ['P','P','P','P','B','C','C','C','S','S','S','S'],
-  potato:  ['P','P','P','P','B','B','C','C','B','B','B','B'],
-  fallow:  ['P','P','P','P','B','B','B','B','B','B','B','B'],
-  nofallow:['P','P','P','P','S','S','S','S','S','S','S','S']
-};
-
-const ROTS = [
-  { id:'base', name:'Wheat → wheat → clean fallow', seq:'Current baseline · 3-year cycle', years:['wheat','wheat','fallow'],
-    why:['This is the common wheat-belt practice and the reference point for every other card.','Clean fallow stores soil moisture and controls weeds before the next wheat crop.'],
-    benefits:['Familiar equipment, seed and grain markets.','Fallow stores moisture for the wheat that follows, which helps in dry years.','Simple weed control through cultivation.'],
-    unknowns:['How much moisture fallow actually stores on this farm\'s soil (no SMAP data ingested).','How much topsoil is lost to wind during bare springs on this field.'] },
-  { id:'pea', name:'Wheat → field pea → wheat', seq:'Legume break · 3-year cycle', years:['wheat','pea','wheat'],
-    why:['Pea fixes nitrogen from the air, adding soil nitrogen for the next wheat crop.','It replaces the bare fallow year with a living crop, breaking cereal disease cycles.'],
-    benefits:['Adds nitrogen, so the following wheat may need less fertilizer.','Breaks wheat root-disease and weed cycles.','A crop to sell in the year that would otherwise earn nothing.'],
-    unknowns:['Whether there is a reliable local buyer for peas.','Pea residue is light: check how well it protects soil in spring.','Pea is sensitive to heat during flowering in July.'] },
-  { id:'barley', name:'Wheat → barley → wheat', seq:'Cereal with retained stubble · 3-year cycle', years:['wheat','barley','wheat'],
-    why:['Barley matures earlier than wheat and leaves standing stubble through winter and the windy spring.','It keeps a cereal system farmers already know while removing the bare fallow year.'],
-    benefits:['Stubble every winter and spring traps snow and protects against wind erosion.','Barley is earlier maturing, which helps where the frost-free season is short.','Uses the same seeding and harvest equipment as wheat.'],
-    unknowns:['Cereal after cereal can build up root diseases and grassy weeds.','Barley demand (feed, malting) in the local market.','More fertilizer may be needed without a fallow or legume year.'] },
-  { id:'oat', name:'Wheat → fodder oat (hay) → wheat', seq:'Forage break · 3-year cycle', years:['wheat','oat','wheat'],
-    why:['Fodder oat is cut for hay in August, so it needs the shortest frost-free window.','Herders need winter fodder, so it can link crop farms with livestock.'],
-    benefits:['Short season: lower frost risk than grain crops.','Hay for winter livestock feed or sale to herders.','Stubble and regrowth cover the soil into winter.'],
-    unknowns:['Hay price and demand vary from year to year and by distance to herders.','Removing hay takes nutrients off the field.','Late sowing (June) leaves soil bare for a few weeks in early summer.'] },
-  { id:'rape', name:'Wheat → rapeseed → wheat', seq:'Oilseed break · 3-year cycle', years:['wheat','rape','wheat'],
-    why:['Rapeseed is a non-cereal break crop with a deep taproot.','It is the main expanding cash crop in the wheat belt.'],
-    benefits:['Breaks cereal disease cycles.','Taproot can open up compacted soil.','Higher relative market value than cereals.'],
-    unknowns:['Needs a longer frost-free season and is sensitive to heat at flowering.','High water demand in dry summers.','Pests (flea beetles) and seed costs need local advice.'] },
-  { id:'potato', name:'Wheat → potato → wheat', seq:'Vegetable break · 3-year cycle', years:['wheat','potato','wheat'],
-    why:['Potato has the highest relative market value of these crops.','It suits farms with irrigation and a nearby market.'],
-    benefits:['Highest income index of all options.','Breaks cereal disease cycles.','Strong local demand in towns.'],
-    unknowns:['Very high water demand: realistic mainly with irrigation.','Digging at harvest leaves soil bare and loose through winter and spring.','Frost-sensitive at both ends of the season; storage and labour costs.'] },
-  { id:'nofallow', name:'Wheat → wheat → no-till stubble fallow', seq:'Fallow with standing stubble · 3-year cycle', years:['wheat','wheat','nofallow'],
-    why:['Keeps the fallow year (moisture storage) but leaves stubble standing instead of cultivating.','Weeds are controlled without tillage, so the soil is never left bare.'],
-    benefits:['Stores more moisture than clean fallow (stubble traps snow, less evaporation).','Soil covered year-round: much lower wind-erosion risk.','Builds organic matter over time.'],
-    unknowns:['Needs a no-till seeder and herbicide weed control; cost and access vary.','Weed resistance and herbicide rules need local advice.','Still no crop income in the fallow year.'] }
-];
+/* ==== SAVED COPY of data/crops.json. The live site loads the file instead, so edit the file, not this. ==== */
+const DEFAULT_CROPS = {"about": "Crop list for Field Shift. Edit this file to add a crop or fix a value; the site reads it when it opens. D = water need index (mm), need = frost-free days needed, soil/income/feed = 0-100 indices, heat = suffers in a hot July, carry = mm of soil water left for (or taken from) the next crop. cal = the field through the year, Jan to Dec: P = same as last year's December, B = bare soil, C = crop growing, S = stubble or residue. gaez = FAO GAEZ suitability rating for each area, filled in by the team (null = not checked yet). All numbers are rough estimates for a local agronomist to check.", "groups": [{"k": "grain", "t": "Grains"}, {"k": "pulse", "t": "Peas, lentils and other pulses"}, {"k": "oil", "t": "Oilseeds"}, {"k": "feed", "t": "Animal feed"}, {"k": "veg", "t": "Roots and vegetables"}], "crops": {"wheat": {"name": "Spring wheat", "word": "wheat", "group": "grain", "fam": "cereal", "D": 300, "need": 90, "soil": 40, "income": 60, "feed": 10, "heat": false, "carry": 0, "cal": "PPPPBCCCSSSS", "role": "Wheat is the main crop of the belt, with the most reliable market.", "why": "Wheat stays in the plan because farms have the equipment and buyers for it.", "benefits": ["Familiar equipment, seed and grain markets.", "Stubble left standing protects the soil over winter."], "checks": ["Wheat after wheat builds up root diseases and weeds."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "barley": {"name": "Spring barley", "word": "barley", "group": "grain", "fam": "cereal", "D": 270, "need": 80, "soil": 45, "income": 50, "feed": 35, "heat": false, "carry": 0, "cal": "PPPPBCCCSSSS", "role": "Barley ripens early and leaves stubble that protects the soil through the windy spring.", "why": "Barley matures earlier than wheat, which helps where the frost-free season is short.", "benefits": ["Stubble traps snow and protects against wind erosion.", "Uses the same seeding and harvest equipment as wheat.", "Grain can be sold or fed to animals."], "checks": ["Cereal after cereal can build up root diseases and grassy weeds.", "Check barley demand (feed or malting) locally."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "oats": {"name": "Oats (grain)", "word": "oats", "group": "grain", "fam": "oat", "D": 290, "need": 85, "soil": 45, "income": 45, "feed": 45, "heat": false, "carry": 0, "cal": "PPPPBCCCSSSS", "role": "Oats cope with cool weather and poorer soil, and the grain feeds animals well.", "why": "Oats are a cereal that does not carry the main wheat root diseases.", "benefits": ["A partial break from wheat diseases.", "Grain and straw are both useful feed.", "Same equipment as wheat."], "checks": ["Lower market price than wheat.", "Oats suffer in hot, dry spells at grain filling."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "millet": {"name": "Proso millet", "word": "millet", "group": "grain", "fam": "millet", "D": 220, "need": 80, "soil": 35, "income": 40, "feed": 35, "heat": false, "carry": 0, "cal": "PPPPPBCCSSSS", "role": "Millet needs very little water and a short season, but frost kills it.", "why": "Millet is sown late and ripens fast, so it can follow a failed or late-sown crop.", "benefits": ["Among the lowest water needs of any grain.", "Likes heat that hurts other crops.", "Short season of about 70 to 90 days."], "checks": ["Any frost kills it, so sowing waits until June.", "Seed drops easily at harvest.", "The local market may be small."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "buckwheat": {"name": "Buckwheat", "word": "buckwheat", "group": "grain", "fam": "buckwheat", "D": 230, "need": 75, "soil": 50, "income": 55, "feed": 5, "heat": true, "carry": 0, "cal": "PPPPPBCCSSSS", "role": "Buckwheat grows fast in a short season and smothers weeds, but even a light frost kills it.", "why": "Buckwheat is sown late and is ready in about 70 to 80 days.", "benefits": ["Very short season.", "Shades out weeds.", "A food crop with its own market, different from wheat."], "checks": ["Killed by even a light frost at both ends of the season.", "Flowers can fail in hot, dry spells.", "Check whether there is a buyer nearby."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "pea": {"name": "Field pea", "word": "peas", "group": "pulse", "fam": "legume", "D": 260, "need": 80, "soil": 85, "income": 55, "feed": 35, "heat": true, "carry": 15, "cal": "PPPPBCCSSSSS", "role": "Peas feed the soil with nitrogen and give a crop to sell or feed in place of a rest year.", "why": "Peas take nitrogen from the air and leave some in the soil for the next wheat crop.", "benefits": ["Adds nitrogen, so the following wheat may need less fertilizer.", "Breaks wheat root-disease and weed cycles.", "Peas can be sold or used as protein feed."], "checks": ["Check for a reliable local buyer.", "Pea residue is light: check how well it protects soil in spring.", "Sensitive to heat during flowering in July."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "lentil": {"name": "Lentil", "word": "lentils", "group": "pulse", "fam": "legume", "D": 220, "need": 85, "soil": 80, "income": 60, "feed": 15, "heat": true, "carry": 15, "cal": "PPPPBCCSSSSS", "role": "Lentils feed the soil with nitrogen and use very little water.", "why": "Lentils fix nitrogen like peas and suit drier fields.", "benefits": ["Adds nitrogen for the next wheat crop.", "Very low water need.", "A food crop with good value for its weight."], "checks": ["Short plants are hard to harvest without the right equipment.", "Sensitive to heat at flowering.", "Light residue: check spring soil cover."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "chickpea": {"name": "Chickpea", "word": "chickpeas", "group": "pulse", "fam": "legume", "D": 240, "need": 100, "soil": 75, "income": 70, "feed": 10, "heat": false, "carry": 10, "cal": "PPPPBCCCSSSS", "role": "Chickpeas handle heat and drought well and sell for a good price, but need a long season.", "why": "Chickpeas are a nitrogen-fixing crop for hot, dry fields.", "benefits": ["Adds nitrogen to the soil.", "Deep roots cope with dry spells.", "Higher value than most grains."], "checks": ["Needs one of the longer frost-free seasons here and ripens slowly in a cool, wet autumn.", "Little local experience: try a small area first.", "Leaf diseases spread in wet weather."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "rape": {"name": "Rapeseed", "word": "rapeseed", "group": "oil", "fam": "brassica", "D": 330, "need": 95, "soil": 50, "income": 75, "feed": 10, "heat": true, "carry": 0, "cal": "PPPPBCCCSSSS", "role": "Rapeseed is a cash crop that breaks wheat diseases, but needs a longer season and more water.", "why": "Rapeseed is a non-cereal break crop with a deep taproot and a growing market.", "benefits": ["Breaks cereal disease cycles.", "Taproot can open up compacted soil.", "Higher market value than cereals."], "checks": ["Sensitive to heat at flowering.", "High water need in dry summers.", "Flea beetles and seed costs need local advice."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "mustard": {"name": "Mustard", "word": "mustard", "group": "oil", "fam": "brassica", "D": 240, "need": 80, "soil": 55, "income": 55, "feed": 5, "heat": true, "carry": 0, "cal": "PPPPBCCSSSSS", "role": "Mustard's deep taproot loosens hard soil, and it needs less water than rapeseed.", "why": "Mustard is a short-season break crop that Mongolian conservation farmers have used in rotations.", "benefits": ["Taproot loosens hard soil layers.", "Short season and modest water need.", "Breaks cereal disease cycles."], "checks": ["The market for mustard seed may be small.", "Flea beetles can damage young plants.", "Heat at flowering lowers seed set."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "flax": {"name": "Flax (linseed)", "word": "flax", "group": "oil", "fam": "flax", "D": 250, "need": 85, "soil": 35, "income": 65, "feed": 5, "heat": false, "carry": 0, "cal": "PPPPBCCCSSSS", "role": "Flax suits cool summers and uses little water, but competes poorly with weeds.", "why": "Flax is a non-cereal break crop that uses less water than rapeseed.", "benefits": ["Breaks wheat disease cycles.", "Lower water need than most cash crops.", "Linseed is traded internationally."], "checks": ["Flax leaves thin residue, so spring soil cover is weaker than it looks here.", "Competes poorly with weeds.", "Check buyers and price locally."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "sunflower": {"name": "Sunflower", "word": "sunflower", "group": "oil", "fam": "sunflower", "D": 380, "need": 115, "soil": 30, "income": 70, "feed": 15, "heat": false, "carry": -15, "cal": "PPPPBBCCCSSS", "role": "Sunflower has a good market but needs a long season, so early frost is a real risk here.", "why": "Sunflower is a deep-rooted oilseed, shown so farmers can see the risk of a long-season crop.", "benefits": ["Deep roots reach water other crops cannot.", "Oilseed with steady demand.", "Breaks cereal disease cycles."], "checks": ["Needs the longest frost-free season of any crop here.", "Deep roots leave the soil dry for the next crop.", "Wide rows leave soil open in early summer."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "oathay": {"name": "Oats for hay", "word": "oat hay", "group": "feed", "fam": "oat", "D": 280, "need": 70, "soil": 55, "income": 50, "feed": 90, "heat": false, "carry": 0, "cal": "PPPPPBCCCSSS", "role": "Oats cut green for hay need the shortest season and give winter feed for livestock.", "why": "Hay oats are cut in August, before frost matters, and herders need winter fodder.", "benefits": ["Short season: lower frost risk than grain crops.", "Hay for your own animals or for sale to herders.", "Stubble and regrowth cover the soil into winter."], "checks": ["Hay price and demand change from year to year.", "Removing hay takes nutrients off the field.", "June sowing leaves soil bare for a few weeks in early summer."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "vetchoat": {"name": "Vetch and oat hay mix", "word": "vetch-oat hay", "group": "feed", "fam": "mix", "D": 270, "need": 70, "soil": 75, "income": 45, "feed": 95, "heat": false, "carry": 10, "cal": "PPPPPBCCCSSS", "role": "Vetch sown with oats makes richer hay than oats alone and adds nitrogen to the soil.", "why": "The vetch fixes nitrogen while the oats hold it up, giving protein-rich hay in a short season.", "benefits": ["Higher-protein hay than oats alone.", "Vetch adds nitrogen for the next crop.", "Cut in August, so frost risk is low."], "checks": ["Vetch seed can be costly or hard to find.", "Removing hay takes nutrients off the field.", "Check the right seed mix with a local agronomist."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "alfalfa": {"name": "Alfalfa", "word": "alfalfa", "group": "feed", "fam": "alfalfa", "D": 420, "need": 60, "soil": 85, "income": 50, "feed": 95, "heat": false, "carry": -20, "cal": "PPPPBCCCCSSS", "second": {"soil": 95, "income": 60, "feed": 100, "cal": "SSSSCCCCCSSS"}, "role": "Alfalfa stays in the ground for years, covers the soil, builds it and gives the best hay, but uses a lot of water.", "why": "Alfalfa is a deep-rooted perennial legume that keeps the soil covered all year once established.", "benefits": ["The best soil builder here: nitrogen, organic matter and deep roots.", "Soil stays covered once it is established.", "High-quality hay for winter feed or sale."], "checks": ["Uses a lot of water and leaves the soil dry for the next crop.", "Needs hardy varieties to survive Mongolian winters.", "Real stands are often kept three to five years."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "maize": {"name": "Silage maize", "word": "silage maize", "group": "feed", "fam": "maize", "D": 400, "need": 105, "soil": 25, "income": 45, "feed": 85, "heat": false, "carry": 0, "cal": "PPPPPBCCCBBB", "bare": "Silage harvest takes the whole plant, so the soil is left bare.", "role": "Maize cut green for silage gives a lot of feed, but needs warmth, water and a long season.", "why": "Silage maize produces more feed per hectare than hay crops where the season allows.", "benefits": ["Very high feed yield in a good year.", "Silage keeps well for winter.", "Breaks wheat disease cycles."], "checks": ["Frost kills it, and it needs a long, warm season.", "Harvest leaves the soil bare through winter and spring.", "Needs silage equipment and storage."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "potato": {"name": "Potato", "word": "potatoes", "group": "veg", "fam": "potato", "D": 380, "need": 100, "soil": 20, "income": 95, "feed": 5, "heat": true, "carry": 0, "cal": "PPPPBBCCBBBB", "bare": "Digging the potatoes disturbs the whole topsoil and leaves it loose and bare.", "role": "Potatoes can earn the most, but need a lot of water and leave the soil loose after digging.", "why": "Potatoes have strong demand in towns and suit farms that can water the field.", "benefits": ["Among the highest earners here.", "Breaks cereal disease cycles.", "Strong local demand."], "checks": ["Very high water need: realistic mainly with watering.", "Digging leaves soil bare and loose through winter and spring.", "Frost-sensitive, with storage and labour costs."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}, "carrot": {"name": "Carrots", "word": "carrots", "group": "veg", "fam": "carrot", "needsWater": true, "D": 420, "need": 100, "soil": 20, "income": 90, "feed": 10, "heat": false, "carry": 0, "cal": "PPPPBBCCCBBB", "bare": "Lifting the carrots leaves the soil dug up, loose and bare.", "role": "Carrots earn well near towns, but only on fields that can be watered.", "why": "Root vegetables turn a farm's water into high value where there is a town market.", "benefits": ["High income with a nearby market.", "Breaks cereal disease cycles.", "Stores well over winter."], "checks": ["Needs watering, labour and storage.", "Harvest leaves soil bare and loose through winter.", "Prices change a lot: check buyers before planting."], "gaez": {"zuunkharaa": null, "darkhan": null, "bulgan": null}}}, "rests": {"fallow": {"name": "Bare rest year", "word": "a bare rest year", "short": "bare rest", "carry": 60, "soil": 10, "cal": "PPPPBBBBBBBB", "role": "A bare rest year saves water, but the soil sits open and can blow away in spring.", "why": "The field is cultivated to kill weeds and store moisture for the next wheat crop.", "benefits": ["Stores moisture for the wheat that follows.", "Simple weed control through cultivation."], "checks": ["How much topsoil is lost to wind during bare springs on this field.", "No income in the rest year."]}, "nofallow": {"name": "Stubble rest year", "word": "a rest year with stubble left standing", "short": "stubble rest", "carry": 80, "soil": 45, "needsSeeder": true, "cal": "PPPPSSSSSSSS", "role": "A rest year with the old stubble left standing saves water and keeps the soil covered.", "why": "Weeds are controlled without tillage, so the soil is never left bare.", "benefits": ["Stores more moisture than a bare rest year, because stubble traps snow.", "Soil is covered all year, so wind erosion risk is much lower."], "checks": ["Needs a no-till seeder and herbicide weed control.", "No income in the rest year."]}}, "featured": [{"id": "base", "years": ["wheat", "wheat", "fallow"], "sum": "The usual plan in the wheat belt. The rest year saves water, but the soil sits bare and can blow away in spring.", "why": ["This is common practice in the wheat belt and the reference point for every other plan.", "The bare rest year stores soil moisture and controls weeds before the next wheat crop."], "benefits": ["Familiar equipment, seed and grain markets.", "The rest year stores moisture for the wheat that follows, which helps in dry years.", "Simple weed control through cultivation."], "unknowns": ["How much moisture the rest year really stores on this farm's soil.", "How much topsoil is lost to wind during bare springs on this field."]}, {"id": "nofallow", "years": ["wheat", "wheat", "nofallow"], "sum": "Keeps the rest year to save water, but leaves the old stubble standing so the soil stays covered.", "why": ["Keeps the rest year (moisture storage) but leaves stubble standing instead of cultivating.", "Weeds are controlled without tillage, so the soil is never left bare."], "benefits": ["Stores more moisture than a bare rest year (stubble traps snow, less evaporation).", "Soil covered all year: much lower wind-erosion risk.", "Builds organic matter over time."], "unknowns": ["Needs a no-till seeder and herbicide weed control; cost and access vary.", "Weed resistance and herbicide rules need local advice.", "Still no crop income in the rest year."]}, {"id": "pea", "years": ["wheat", "pea", "wheat"], "sum": "Peas feed the soil with nitrogen and replace the bare rest year with a crop you can sell.", "why": ["Peas take nitrogen from the air, adding soil nitrogen for the next wheat crop.", "They replace the bare rest year with a living crop, breaking cereal disease cycles."], "benefits": ["Adds nitrogen, so the following wheat may need less fertilizer.", "Breaks wheat root-disease and weed cycles.", "A crop to sell in the year that would otherwise earn nothing."], "unknowns": ["Whether there is a reliable local buyer for peas.", "Pea residue is light: check how well it protects soil in spring.", "Peas are sensitive to heat during flowering in July."]}, {"id": "oathay", "years": ["wheat", "oathay", "wheat"], "sum": "Oats are cut for hay in August. They need the shortest season and give winter feed for livestock.", "why": ["Hay oats are cut in August, so they need the shortest frost-free window.", "Herders need winter fodder, so this links crop farms with livestock."], "benefits": ["Short season: lower frost risk than grain crops.", "Hay for winter livestock feed or sale to herders.", "Stubble and regrowth cover the soil into winter."], "unknowns": ["Hay price and demand vary from year to year and by distance to herders.", "Removing hay takes nutrients off the field.", "June sowing leaves soil bare for a few weeks in early summer."]}, {"id": "alfalfa5", "years": ["wheat", "pea", "wheat", "alfalfa", "alfalfa"], "sum": "A five-year plan: peas between the wheat years, then two years of alfalfa to rebuild the soil and grow hay.", "why": ["Two legumes, peas and alfalfa, add nitrogen and break wheat disease cycles.", "Alfalfa keeps the soil covered all year once established and gives hay for livestock."], "benefits": ["Strong soil building from deep alfalfa roots and nitrogen fixing.", "Soil is covered through the windy season in the alfalfa years.", "Grain, peas and hay spread the risk across three products."], "unknowns": ["Alfalfa uses a lot of water and leaves the soil dry for the wheat that follows.", "Needs hardy alfalfa varieties to survive Mongolian winters.", "A five-year plan needs steady buyers for peas and hay."]}]};
 
 const SOILS = {
   sandy: { name:'Sandy',       carry:0.6, hold:-20, erode:1.3 },
@@ -543,184 +635,12 @@ const SOILS = {
   clay:  { name:'Heavy / clay',carry:1.2, hold:10,  erode:0.85 }
 };
 const IRRIGATION_MM = 150;
-/* What each plan needs from the farm (beyond normal wheat equipment) */
-const NEEDS = { nofallow:['seeder'], pea:['buy_pea'], rape:['buy_rape'], oat:['buy_oat'], potato:['buy_potato'] };
-const NEED_TEXT = { seeder:'needs a no-till seeder', buy_pea:'no buyer for peas', buy_rape:'no buyer for rapeseed', buy_oat:'no buyer for hay', buy_potato:'no buyer for potatoes' };
-
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const PRI = [
-  { k:'water', label:'Save water' }, { k:'soil', label:'Build soil/nitrogen' },
-  { k:'cover', label:'Cut erosion/spring cover' }, { k:'income', label:'Earn income' }
-];
-const METRICS = [
-  { k:'water', label:'Water fit' }, { k:'frost', label:'Frost margin' }, { k:'soil', label:'Soil / nitrogen' },
-  { k:'cover', label:'Spring cover' }, { k:'income', label:'Income index' }
-];
-const COMMON_UNKNOWNS = [
-  'NASA POWER cells are ~55 × 40 km, so field-level differences (slope, soil type, hollows) are invisible here.',
-  'Climate values are provisional until the NASA POWER download is run.',
-  'No yield or price forecast is made. Check markets, inputs and equipment locally.'
-];
-
-const clamp = (x,a=0,b=100) => Math.max(a, Math.min(b, x));
-const winterMonth = m => m >= 9 || m <= 4;   // Oct–May
-
-function buildCal(years){
-  const cal = years.map(y => TPL[y].slice());
-  for (let pass=0; pass<2; pass++){
-    for (let i=0;i<3;i++){
-      const prev = cal[(i+2)%3];
-      for (let m=0;m<12;m++) if (TPL[years[i]][m]==='P') cal[i][m] = prev[11]==='P' ? 'S' : prev[11];
-    }
-  }
-  return cal;
-}
-
-function desk(){
-  return {
-    LOC, CROPS, ROTS, MONTHS, PRI, METRICS, COMMON_UNKNOWNS,
-    tab:'desk', loc:'darkhan', drier:false, hotter:false, sel:null,
-    w:{ water:3, soil:3, cover:3, income:3 },
-    soilType:'loam', irrig:false, seeder:true, buyers:{ pea:true, rape:true, oat:true, potato:true },
-
-    get L(){ return this.LOC[this.loc]; },
-    rain(d=this.drier){ return d ? this.L.dryRain : this.L.summerRain; },
-    ffd(h=this.hotter){ return this.L.ffd - (h ? 12 : 0); },
-    julyT(h=this.hotter){ return this.L.julyT + (h ? 1.5 : 0); },
-
-    scoreRot(r, d=this.drier, h=this.hotter){
-      const R = this.rain(d), F = this.ffd(h), T = this.julyT(h);
-      const cal = buildCal(r.years);
-      const water=[], frost=[]; let soil=0, income=0;
-      r.years.forEach((y,i) => {
-        const c = CROPS[y], p = CROPS[r.years[(i+2)%3]];
-        let s = c.soil; if (c.cereal && p.cereal) s -= 10;
-        soil += s; income += c.income;
-        if (c.fallow){ water.push(85); return; }
-        const sf = SOILS[this.soilType];
-        const carry = (p.fallow ? p.carry : (r.years[(i+2)%3]==='pea' ? 15 : 0)) * sf.carry;
-        const supply = R + carry + sf.hold + (this.irrig ? IRRIGATION_MM : 0);
-        water.push(clamp(100*(supply/c.D - 0.45)/0.55));
-        frost.push(clamp(40 + 2*(F - c.need)) - (c.heat ? 12*Math.max(0, T-18.5) : 0));
-      });
-      let wb = 0, bareWin = 0;
-      cal.forEach(yr => yr.forEach((st,m) => { if (st==='B' && winterMonth(m)){ bareWin++; wb += (m===3||m===4) ? 2 : 1; } }));
-      const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
-      const s = {
-        water: mean(water),
-        frost: clamp(0.5*Math.min(...frost) + 0.5*mean(frost)),
-        soil: clamp(soil/3), cover: clamp(100*(1 - wb*SOILS[this.soilType].erode/30)), income: clamp(income/3)
-      };
-      const wt = { water: this.w.water*(d?2:1), frost:2, soil:this.w.soil, cover:this.w.cover, income:this.w.income };
-      const sw = Object.values(wt).reduce((a,b)=>a+b,0);
-      s.total = sw ? Object.keys(wt).reduce((a,k)=>a + wt[k]*s[k],0)/sw : 0;
-      return { r, s, cal, bareWin };
-    },
-    ranked(d=this.drier, h=this.hotter){
-      const all = ROTS.map(r => this.scoreRot(r,d,h)).sort((a,b)=>b.s.total-a.s.total);
-      all.forEach((x,i)=> x.rank = i+1);
-      return all;
-    },
-    missing(r){
-      const have = { seeder:this.seeder, buy_pea:this.buyers.pea, buy_rape:this.buyers.rape, buy_oat:this.buyers.oat, buy_potato:this.buyers.potato };
-      return (NEEDS[r.id] || []).filter(n => !have[n]).map(n => NEED_TEXT[n]);
-    },
-    hidden(){ return ROTS.filter(r => r.id!=='base' && this.missing(r).length).map(r => ({ r, why:this.missing(r) })); },
-    shown(){
-      const all = this.ranked();
-      const base = all.find(x=>x.r.id==='base');
-      const alts = all.filter(x=>x.r.id!=='base' && !this.missing(x.r).length).slice(0,2);
-      return [base, ...alts].sort((a,b)=>b.s.total-a.s.total);
-    },
-
-    whyMain(){
-      const [a,b] = this.shown();
-      const diffs = METRICS.map(m => ({ m, d: a.s[m.k]-b.s[m.k] })).sort((x,y)=>y.d-x.d);
-      const plus = diffs.filter(x=>x.d>=3).slice(0,2).map(x=>x.m.label.toLowerCase()+' (+'+Math.round(x.d)+')');
-      const minus = diffs.filter(x=>x.d<=-3).slice(-1).map(x=>x.m.label.toLowerCase()+' ('+Math.round(x.d)+')');
-      let t = 'Compared with ' + b.r.name + ', it is ahead on ' + (plus.length ? plus.join(' and ') : 'a close mix of scores');
-      t += minus.length ? ', trading off ' + minus.join('') + '.' : '.';
-      const gap = a.s.total-b.s.total;
-      return t + (gap < 2 ? ' The two are nearly tied, so small slider changes can reorder the cards.' : ' The gap is ' + Math.round(gap) + ' points' + (gap < 6 ? ', so small slider changes can reorder the cards.' : '.'));
-    },
-    whyNotes(){
-      const n = [], shownIds = this.shown().map(x=>x.r.id), L = this.L;
-      if (this.w.cover >= 3 && (shownIds.includes('barley') || shownIds.includes('oat')))
-        n.push('Barley and fodder oat score well on spring cover: their stubble stands through the windy April–May period (≈'+L.springWind.toFixed(1)+' m/s average wind here), instead of bare soil.');
-      const baseNow = this.ranked().find(x=>x.r.id==='base').rank;
-      if (this.drier){
-        const baseWet = this.ranked(false,this.hotter).find(x=>x.r.id==='base').rank;
-        n.push('Clean fallow '+(baseNow<baseWet ? 'climbs from #'+baseWet+' to #'+baseNow : 'is #'+baseNow)+' of 7 under Drier Year, because stored fallow moisture matters more when rain is only '+L.dryRain+' mm. But its soil stays bare from October to May while spring winds average ≈'+L.springWind.toFixed(1)+' m/s, so erosion risk is high.');
-        const pWet = this.ranked(false,this.hotter).find(x=>x.r.id==='potato'), pNow = this.ranked().find(x=>x.r.id==='potato');
-        n.push('Potato drops under Drier Year ('+Math.round(pWet.s.total)+' → '+Math.round(pNow.s.total)+' points'+(pNow.rank!==pWet.rank ? ', #'+pWet.rank+' → #'+pNow.rank : '')+'): its water-demand index ('+CROPS.potato.D+') is far above dry-year rainfall unless the field is irrigated.');
-      }
-      if (this.hotter)
-        n.push('Hotter / Frost-Squeezed shortens the frost-free window to '+this.ffd()+' days and raises July to '+this.julyT().toFixed(1)+'°C. Rapeseed, potato and pea lose frost & heat margin first.');
-      n.push('This is a comparison aid, not a recommendation. Check it with the farmer and a local agronomist.');
-      return n;
-    },
-
-    cardWhy(it){
-      const base = this.scoreRot(ROTS[0]);
-      const t = it.r.why.slice();
-      if (it.r.id !== 'base'){
-        const up = METRICS.map(m=>({m,d:it.s[m.k]-base.s[m.k]})).filter(x=>x.d>=5).sort((a,b)=>b.d-a.d);
-        if (up.length) t.push('Versus the baseline here: ' + up.map(x=>x.m.label.toLowerCase()+' +'+Math.round(x.d)).join(', ') + '.');
-      }
-      return t;
-    },
-    cardEvidence(it){
-      const L = this.L, R = this.rain(), F = this.ffd();
-      const crops = [...new Set(it.r.years)].map(y=>CROPS[y]).filter(c=>!c.fallow);
-      const ev = [];
-      ev.push('NASA POWER rainfall: '+(this.drier ? 'dry-year (25th percentile) ' : '')+'summer rain ≈'+R+' mm vs water-demand index '+crops.map(c=>c.short+' '+c.D).join(', ')+'.');
-      ev.push('NASA POWER T2M_MIN: frost-free window ≈'+F+' days vs need '+crops.map(c=>c.short+' '+c.need+' d').join(', ')+(this.hotter?' (squeezed by 12 days).':'.'));
-      ev.push('NASA POWER T2M: July mean ≈'+this.julyT().toFixed(1)+'°C'+(crops.some(c=>c.heat) ? '; heat-sensitive crops lose margin above 18.5°C.' : '.'));
-      ev.push('NASA POWER WS2M: spring wind ≈'+L.springWind.toFixed(1)+' m/s (Apr–May); this cycle has '+it.bareWin+' bare Oct–May months (residue calendar stands in for MODIS/Landsat bare-soil data).');
-      ev.push('All values provisional and for a ~55 × 40 km grid cell. Elevation ≈'+L.elev+' m is approximate.');
-      return ev;
-    },
-
-    cellClass(st,m){ return st==='B' ? (winterMonth(m) ? 'BW' : 'BS') : st; },
-    cellColor(st,m){ return { C:'var(--canopy)', S:'var(--stubble)', BS:'var(--bare-sum)', BW:'var(--bare-win)' }[this.cellClass(st,m)]; },
-    stateName(st,m){ return st==='C' ? 'Active canopy' : st==='S' ? 'Stubble / residue' : (winterMonth(m) ? 'Bare ground (Oct–May)' : 'Bare ground (Jun–Sep)'); },
-    isSel(id,y,m){ return this.sel && this.sel.id===id && this.sel.y===y && this.sel.m===m; },
-    explainCell(r,cal,y,m){
-      const key = r.years[y], c = CROPS[key], prevKey = r.years[(y+2)%3], p = CROPS[prevKey];
-      const st = cal[y][m], tpl = TPL[key][m], wind = this.L.springWind.toFixed(1);
-      if (tpl==='P'){
-        if (st==='S') return 'Over winter, '+p.name.toLowerCase()+' residue from last year is still standing. It traps snow and slows wind'+(m>=3?' during the windy spring (≈'+wind+' m/s).':'.');
-        return 'Soil left bare after last year\'s '+p.name.toLowerCase()+(prevKey==='potato'?' harvest (dug soil)':'')+'. Exposed to wind'+(m>=3?', and April–May are the windiest months (≈'+wind+' m/s).':' through winter.');
-      }
-      if (c.fallow){
-        if (key==='nofallow') return 'Stubble rest year: last crop\'s stubble stays standing. Weeds are controlled without tillage, so moisture is stored while the soil stays covered.';
-        return 'Bare rest year: the field is cultivated repeatedly to kill weeds and store moisture, so the soil is bare'+(winterMonth(m)?' into the windy season.':' through summer.');
-      }
-      if (st==='B'){
-        if (key==='potato' && m>=8) return m===8 ? 'Potato harvest: digging disturbs the whole topsoil and leaves it loose and bare.' : 'After the potato dig the loose soil stays bare through winter, the most erosion-prone setup on this desk.';
-        if (key==='potato' && m===5) return 'Potato rows are emerging, so most of the soil is still uncovered.';
-        return 'Seedbed prepared and '+c.name.toLowerCase()+' sown. Soil is mostly bare until the crop grows.';
-      }
-      if (st==='C') return c.name+' is growing: roots hold the soil and the crop is using water.'+(m===6 && c.heat ? ' July heat matters here: this crop is heat-sensitive.' : '');
-      return c.name+' harvested'+(key==='oat'?' for hay; regrowth and stubble':'; stubble')+' is left standing to trap snow and protect soil until next season.';
-    }
-  };
-}
-
-
-const PLAIN = {
-  base:     { name:'Wheat, wheat, then a bare rest year', sum:'The usual plan in the wheat belt. The rest year saves water, but the soil sits bare and can blow away in spring.' },
-  pea:      { name:'Wheat, peas, wheat', sum:'Peas feed the soil with nitrogen and replace the bare rest year with a crop you can sell.' },
-  barley:   { name:'Wheat, barley, wheat', sum:'Barley ripens early and leaves stubble that protects the soil through the windy spring.' },
-  oat:      { name:'Wheat, oats for hay, wheat', sum:'Oats are cut for hay in August. They need the shortest season and give winter feed for livestock.' },
-  rape:     { name:'Wheat, rapeseed, wheat', sum:'Rapeseed is a cash crop that breaks wheat diseases, but needs a longer season and more water.' },
-  potato:   { name:'Wheat, potatoes, wheat', sum:'Potatoes can earn the most, but need a lot of water and leave the soil loose after digging.' },
-  nofallow: { name:'Wheat, wheat, then a rest year with stubble left standing', sum:'Keeps the rest year to save water, but leaves the old stubble standing so the soil stays covered.' }
-};
-const CROPWORD = { wheat:'wheat', barley:'barley', pea:'peas', oat:'oat hay', rape:'rapeseed', potato:'potatoes', fallow:'bare rest', nofallow:'stubble rest' };
+const METRICS = ['water','frost','soil','cover','income','feed'];
+const NAMES = { water:'water', frost:'frost and heat safety', soil:'soil health', cover:'ground cover', income:'income', feed:'animal feed' };
 const GOALS = [
   { k:'water', label:'Use less water' }, { k:'soil', label:'Make the soil richer' },
-  { k:'cover', label:'Stop soil blowing away' }, { k:'income', label:'Earn more money' }
+  { k:'cover', label:'Stop soil blowing away' }, { k:'income', label:'Earn more money' }, { k:'feed', label:'Feed my animals' }
 ];
 const LEVELS = [ { v:0, t:'Low' }, { v:3, t:'Medium' }, { v:5, t:'High' } ];
 const YEARS = [
@@ -731,14 +651,137 @@ const YEARS = [
 ];
 const RATE = [
   { k:'water', t:'Water' }, { k:'frost', t:'Frost & heat safety' }, { k:'soil', t:'Soil health' },
-  { k:'cover', t:'Ground cover' }, { k:'income', t:'Income' }
+  { k:'cover', t:'Ground cover' }, { k:'income', t:'Income' }, { k:'feed', t:'Animal feed' }
 ];
-const BUYERS = [ { k:'pea', t:'Peas' }, { k:'rape', t:'Rapeseed' }, { k:'oat', t:'Hay' }, { k:'potato', t:'Potatoes' } ];
 const PLAIN_UNKNOWNS = [
   'Our weather numbers cover an area of about 55 × 40 km, so they cannot see your slopes, soil type or low spots.',
   'We do not predict harvests or prices. Check seed, equipment and buyers locally.'
 ];
+const NUMWORD = ['', 'one', 'two', 'three', 'four', 'five'];
 
+const clamp = (x,a=0,b=100) => Math.max(a, Math.min(b, x));
+const winterMonth = m => m >= 9 || m <= 4;   // Oct–May
+const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
+const uniq = a => [...new Set(a)];
+
+/* ---------- crops and plans (rebuilt whenever crops.json loads) ---------- */
+let CROPS = {}, GROUPS = [], PLANS = [], BASE = null;
+const CACHE = new Map();
+
+/* The crop as it behaves in year i: a perennial in its second year uses its "second" values. */
+function eff(years, i){
+  const n = years.length, k = years[i], c = CROPS[k];
+  return (c.second && n > 1 && years[(i-1+n)%n] === k) ? Object.assign({}, c, c.second) : c;
+}
+function buildCal(years){
+  const n = years.length, tp = years.map((y,i) => eff(years,i).cal.split(''));
+  const cal = tp.map(t => t.slice());
+  for (let pass=0; pass<=n; pass++)
+    for (let i=0;i<n;i++){
+      const prev = cal[(i-1+n)%n];
+      for (let m=0;m<12;m++) if (tp[i][m]==='P') cal[i][m] = prev[11]==='P' ? 'S' : prev[11];
+    }
+  return { cal, tp };
+}
+function planName(years){
+  const parts = [];
+  for (let i=0;i<years.length;){
+    let j = i; while (j < years.length && years[j] === years[i]) j++;
+    const c = CROPS[years[i]], run = j - i;
+    if (c.second && run > 1){ parts.push(NUMWORD[run] + ' years of ' + c.word); i = j; }
+    else { parts.push(c.fallow && i < years.length-1 ? c.name.toLowerCase() : c.word); i++; }
+  }
+  const last = parts[parts.length-1], lastKey = years[years.length-1];
+  if (parts.length > 1 && (CROPS[lastKey].fallow || / years of /.test(last))) parts[parts.length-1] = 'then ' + last;
+  const t = parts.join(', ');
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+function autoText(years){
+  const n = years.length, br = uniq(years).filter(k => k !== 'wheat'), wheatYears = years.filter(k => k==='wheat').length;
+  const pick = f => uniq(br.flatMap(k => (CROPS[k][f] || []).slice(0,2))).slice(0,6);
+  return {
+    sum: br.length ? br.slice(0,2).map(k => CROPS[k].role).join(' ') : CROPS.wheat.role,
+    why: br.map(k => CROPS[k].why).filter(Boolean).concat(['A ' + n + '-year cycle with wheat in ' + wheatYears + ' of ' + n + ' years.']),
+    benefits: pick('benefits'), unknowns: pick('checks')
+  };
+}
+function makePlan(years, meta){
+  const n = years.length, { cal, tp } = buildCal(years);
+  let wb = 0, bareWin = 0, soil = 0, income = 0, feed = 0;
+  cal.forEach(yr => yr.forEach((st,m) => { if (st==='B' && winterMonth(m)){ bareWin++; wb += (m===3||m===4) ? 2 : 1; } }));
+  years.forEach((k,i) => {
+    const e = eff(years,i), pk = years[(i-1+n)%n], p = CROPS[pk];
+    let s = e.soil; if (e.fam && p.fam === e.fam && !(e.second && pk === k)) s -= 10;
+    soil += s; income += e.income || 0; feed += e.feed || 0;
+  });
+  const text = meta && meta.sum ? meta : autoText(years);
+  return { id: meta && meta.id || years.join('-'), years, n, cal, tp, wb, bareWin,
+    soilAvg: soil/n, incomeAvg: income/n, feedAvg: feed/n, featured: !!(meta && meta.featured),
+    breaks: uniq(years).filter(k => k!=='wheat').sort().join('+'),
+    name: planName(years), sum: text.sum, why: text.why || [], benefits: text.benefits || [], unknowns: text.unknowns || [] };
+}
+function canon(years){
+  let best = null;
+  for (let i=0;i<years.length;i++){ const s = years.slice(i).concat(years.slice(0,i)).join('-'); if (best===null || s < best) best = s; }
+  return best;
+}
+function sensible(years){
+  const n = years.length;
+  for (let i=0;i<n;i++){
+    const a = years[i], b = years[(i+1)%n], A = CROPS[a], B = CROPS[b];
+    if (A.fallow && B.fallow) return false;
+    if (a === b && a !== 'wheat' && !A.second) return false;
+    if (a !== b && A.fam && A.fam === B.fam && A.fam !== 'cereal') return false;
+  }
+  return true;
+}
+function buildPlans(featured){
+  const seen = new Set(), out = [];
+  const add = (years, meta) => { const c = canon(years); if (seen.has(c) || (!meta && !sensible(years))) return; seen.add(c); out.push(makePlan(years, meta)); };
+  (featured || []).forEach(f => add(f.years, Object.assign({ featured:true }, f)));
+  const W = 'wheat', all = Object.keys(CROPS);
+  const R = all.filter(k => CROPS[k].fallow), P = all.filter(k => CROPS[k].second);
+  const X = all.filter(k => k !== W && !CROPS[k].fallow && !CROPS[k].second), XR = X.concat(R);
+  XR.forEach(x => add([W,x]));
+  X.forEach(x => add([W,x,W])); R.forEach(r => add([W,W,r]));
+  XR.forEach(x => XR.forEach(y => { if (x !== y) add([W,x,y]); }));
+  XR.forEach((x,i) => XR.slice(i+1).forEach(y => add([W,x,W,y])));
+  P.forEach(a => {
+    add([W,a,a,W]); X.forEach(x => add([W,a,a,x]));
+    add([W,a,a,a,W]); X.forEach(x => add([W,x,W,a,a])); R.forEach(r => add([W,a,a,W,r]));
+  });
+  X.forEach((x,i) => X.slice(i).forEach(y => R.forEach(r => add([W,x,W,y,r]))));
+  return out;
+}
+function loadCrops(j){
+  CROPS = {};
+  Object.entries(j.crops).forEach(([k,c]) => { CROPS[k] = Object.assign({ key:k, carry:0, feed:0 }, c); });
+  Object.entries(j.rests).forEach(([k,c]) => { CROPS[k] = Object.assign({ key:k, fallow:true, feed:0, income:0 }, c); });
+  GROUPS = j.groups;
+  PLANS = buildPlans(j.featured);
+  BASE = PLANS.find(p => p.id === 'base') || PLANS[0];
+  CACHE.clear();
+}
+loadCrops(DEFAULT_CROPS);
+
+function scorePlan(p, st){
+  const water = [], frost = [];
+  p.years.forEach((k,i) => {
+    const e = eff(p.years,i);
+    if (e.fallow){ water.push(85); return; }
+    const pv = eff(p.years,(i-1+p.n)%p.n);
+    const carry = (pv.carry || 0) * ((pv.carry || 0) > 0 ? st.sf.carry : 1);
+    const supply = st.R + carry + st.sf.hold + (st.irrig ? IRRIGATION_MM : 0);
+    water.push(clamp(100*(supply/e.D - 0.45)/0.55));
+    frost.push(clamp(40 + 2*(st.F - e.need)) - (e.heat ? 12*Math.max(0, st.T-18.5) : 0));
+  });
+  const s = { water: mean(water), frost: frost.length ? clamp(0.5*Math.min(...frost) + 0.5*mean(frost)) : 100,
+    soil: clamp(p.soilAvg), cover: clamp(100*(1 - p.wb*st.sf.erode/(10*p.n))), income: clamp(p.incomeAvg), feed: clamp(p.feedAvg) };
+  const wt = { water: st.w.water*(st.d?2:1), frost:2, soil:st.w.soil, cover:st.w.cover, income:st.w.income, feed:st.w.feed };
+  const sw = METRICS.reduce((a,k) => a + wt[k], 0);
+  s.total = METRICS.reduce((a,k) => a + wt[k]*s[k], 0)/sw;
+  return { r:p, s, cal:p.cal, bareWin:p.bareWin };
+}
 
 /* ---------- automatic NASA data ---------- */
 const POWER_URL = 'https://power.larc.nasa.gov/api/temporal/daily/point';
@@ -754,11 +797,10 @@ function summarizePower(p, start, end){
     tmin.forEach(([d,v],i) => { if (v<=0 && d.slice(4)<'0701') lastSpring=i; if (v<=0 && d.slice(4)>='0701' && firstAutumn<0) firstAutumn=i; });
     if (lastSpring>=0 && firstAutumn>=0) ffd.push(firstAutumn-lastSpring-1);
     const jul = days.filter(d => d.slice(4,6)==='07' && ok(p.T2M[d])).map(d => p.T2M[d]);
-    if (jul.length) jt.push(jul.reduce((a,b)=>a+b,0)/jul.length);
+    if (jul.length) jt.push(mean(jul));
     const am = days.filter(d => ['04','05'].includes(d.slice(4,6)) && ok(p.WS2M[d])).map(d => p.WS2M[d]);
-    if (am.length) wind.push(am.reduce((a,b)=>a+b,0)/am.length);
+    if (am.length) wind.push(mean(am));
   }
-  const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
   const s = rain.slice().sort((a,b)=>a-b);
   const m = s.length + 1, j = Math.floor(m/4), dl = m - j*4;   // same as Python statistics.quantiles(n=4)[0]
   const q25 = (s[j-1]*(4-dl) + s[j]*dl) / 4;
@@ -768,12 +810,94 @@ function summarizePower(p, start, end){
 }
 function kmBetween(a,b,c,d){ const r=Math.PI/180, x=(d-b)*r*Math.cos((a+c)/2*r), y=(c-a)*r; return Math.round(6371*Math.sqrt(x*x+y*y)); }
 
+/* ---------- the page ---------- */
 function friendly(){
-  const d = desk();
-  const extra = {
-
+  const can = {}; Object.keys(CROPS).forEach(k => { if (!CROPS[k].fallow && k !== 'wheat') can[k] = true; });
+  return {
+    LOC: JSON.parse(JSON.stringify(DEFAULT_LOC)), MONTHS, GOALS, LEVELS, YEARS, RATE, PLAIN_UNKNOWNS, SOILS,
+    tab:'desk', loc:'darkhan', drier:false, hotter:false, sel:null, cropsVer:0, cropsLive:false,
+    w:{ water:3, soil:3, cover:3, income:3, feed:0 },
+    soilType:'loam', irrig:false, seeder:true, can,
+    custom:['wheat','lentil','barley'],
     dataStatus:'loading', meta:{ updated:null, start:2001, end:2025 }, locBusy:false, locMsg:'',
+
+    get L(){ return this.LOC[this.loc]; },
+    rain(d=this.drier){ return d ? this.L.dryRain : this.L.summerRain; },
+    ffd(h=this.hotter){ return this.L.ffd - (h ? 12 : 0); },
+    julyT(h=this.hotter){ return this.L.julyT + (h ? 1.5 : 0); },
+    state(d=this.drier, h=this.hotter){
+      return { R:this.rain(d), F:this.ffd(h), T:this.julyT(h), sf:SOILS[this.soilType], irrig:this.irrig, d,
+        w:{ water:this.w.water, soil:this.w.soil, cover:this.w.cover, income:this.w.income, feed:this.w.feed } };
+    },
+    ranked(d=this.drier, h=this.hotter){
+      const st = this.state(d,h), key = this.cropsVer + '|' + JSON.stringify([st.R, st.F, st.T, this.soilType, st.irrig, d, st.w]);
+      if (CACHE.has(key)) return CACHE.get(key);
+      const all = PLANS.map(p => scorePlan(p, st)).sort((a,b) => b.s.total - a.s.total);
+      all.forEach((x,i) => { x.rank = i+1; });
+      if (CACHE.size > 40) CACHE.clear();
+      CACHE.set(key, all);
+      return all;
+    },
+    scoreOne(p){ return scorePlan(p, this.state()); },
+
+    /* which plans fit the farm */
+    missing(r){
+      const out = [], ks = uniq(r.years);
+      const no = ks.filter(k => this.can[k] === false);
+      if (no.length) out.push('includes ' + no.map(k => CROPS[k].word).join(', ') + ', which you unticked');
+      if (!this.seeder && ks.some(k => CROPS[k].needsSeeder)) out.push('needs a no-till seeder');
+      if (!this.irrig && ks.some(k => CROPS[k].needsWater)) out.push('needs watering');
+      return out;
+    },
+    fits(r){ return this.missing(r).length === 0; },
+    asideText(){
+      const n = PLANS.filter(p => p.id !== 'base' && !this.fits(p)).length;
+      if (!n) return '';
+      const why = [], no = Object.keys(this.can).filter(k => this.can[k] === false && CROPS[k]);
+      if (no.length) why.push('they include crops you unticked (' + no.map(k => CROPS[k].word).join(', ') + ')');
+      if (!this.seeder) why.push('they need a no-till seeder');
+      if (!this.irrig && Object.values(CROPS).some(c => c.needsWater)) why.push('they need watering');
+      return n + ' of ' + PLANS.length + ' plans are set aside because ' + why.join(', or ') + '.';
+    },
+    shown(){
+      const all = this.ranked();
+      const base = all.find(x => x.r.id === 'base') || all[0];
+      const alts = all.filter(x => x !== base && this.fits(x.r));
+      const first = alts[0], second = alts.find(x => x !== first && x.r.breaks !== first.r.breaks) || alts[1];
+      return [base, first, second].filter(Boolean).sort((a,b) => b.s.total - a.s.total);
+    },
+    featuredList(){ const top = this.shown().map(x => x.r.id); return this.ranked().filter(x => x.r.featured && !top.includes(x.r.id)); },
+    planCount(){ this.cropsVer; return PLANS.length; },
+    cropCount(){ this.cropsVer; return Object.values(CROPS).filter(c => !c.fallow).length; },
+    cropWord(r, i){ const c = CROPS[r.years[i]]; return c.short || c.word; },
+    pickable(){ this.cropsVer; return Object.values(CROPS).filter(c => !c.fallow && c.key !== 'wheat'); },
+    tickAll(v){ Object.keys(this.can).forEach(k => { this.can[k] = v; }); },
+
+    /* your own plan */
+    buildOptions(){ this.cropsVer; return Object.values(CROPS).map(c => ({ k:c.key, t:c.name })); },
+    setLen(n){ while (this.custom.length < n) this.custom.push('wheat'); this.custom.splice(n); this.sel = null; },
+    customList(){
+      const years = this.custom.filter(k => CROPS[k]);
+      const p = makePlan(years, null); p.id = 'custom';
+      const miss = this.missing(p);
+      p.sum = 'The plan you built. Change any year to compare.';
+      p.unknowns = (miss.length ? ['From your field answers: this plan ' + miss.join(' and ') + '.'] : [])
+        .concat(sensible(years) ? [] : ['This order repeats a crop or crop family back to back, which usually builds up pests and diseases.'])
+        .concat(p.unknowns, ['You built this plan, so check it with a local agronomist before planting.']);
+      return [ this.scoreOne(p) ];
+    },
+    customRank(){ const me = this.customList()[0].s.total; return this.ranked().filter(x => x.s.total > me).length + 1; },
+
+    /* loading data */
     async boot(){
+      try {
+        const r = await fetch('data/crops.json', { cache:'no-store' });
+        if (!r.ok) throw new Error('no file');
+        loadCrops(await r.json());
+        Object.keys(CROPS).forEach(k => { if (!CROPS[k].fallow && k !== 'wheat' && this.can[k] === undefined) this.can[k] = true; });
+        this.custom = this.custom.map(k => CROPS[k] ? k : 'wheat');
+        this.cropsLive = true; this.cropsVer++;
+      } catch(e){ /* keep the saved copy */ }
       try {
         const r = await fetch('data/climate.json', { cache:'no-store' });
         if (!r.ok) throw new Error('no file');
@@ -784,7 +908,7 @@ function friendly(){
         this.dataStatus = 'live';
       } catch(e){ this.dataStatus = 'saved'; }
     },
-    niceDate(s){ if (!s) return 'unknown'; const d = new Date(s); return d.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }); },
+    niceDate(s){ if (!s) return 'unknown'; return new Date(s).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }); },
     dataLine(){
       if (this.dataStatus==='loading') return 'Loading NASA weather data…';
       if (this.dataStatus==='live') return 'NASA weather data, updated ' + this.niceDate(this.meta.updated);
@@ -809,7 +933,7 @@ function friendly(){
           if (!r.ok) throw new Error('NASA ' + r.status);
           const j = await r.json();
           const s = summarizePower(j.properties.parameter, 2001, end);
-          this.LOC.mine = Object.assign({ name:'Your farm', aimag:'From your location', lat, lon, elev:Math.round(j.geometry.coordinates[2]), live:true }, s);
+          this.LOC.mine = Object.assign({ name:'Your farm', aimag:'', lat, lon, elev:Math.round(j.geometry.coordinates[2]), live:true }, s);
           this.loc = 'mine'; this.sel = null;
           this.locMsg = 'Using NASA weather for your exact location (' + lat.toFixed(2) + '°N, ' + lon.toFixed(2) + '°E).';
         } catch(e){
@@ -820,9 +944,11 @@ function friendly(){
         this.locBusy = false;
       }, () => { this.locBusy = false; this.locMsg = 'Location was not shared. Please pick the closest area.'; }, { timeout:15000 });
     },
-    PLAIN, CROPWORD, GOALS, LEVELS, YEARS, RATE, PLAIN_UNKNOWNS, SOILS, BUYERS,
+
+    /* words */
     yearType(){ return this.drier && this.hotter ? 'both' : this.drier ? 'dry' : this.hotter ? 'hot' : 'normal'; },
     setYear(k){ this.drier = (k==='dry'||k==='both'); this.hotter = (k==='hot'||k==='both'); },
+    yearWord(){ return { normal:'a normal year', dry:'a dry year', hot:'a short, hot season', both:'a dry and hot year' }[this.yearType()]; },
     word(v){ return v >= 70 ? 'Good' : v >= 45 ? 'Fair' : 'Weak'; },
     dots(v){ return Math.max(1, Math.round(v/20)); },
     matchWord(v){ return v >= 60 ? 'Strong match' : v >= 45 ? 'Fair match' : 'Weak match'; },
@@ -830,60 +956,93 @@ function friendly(){
 
     plainWhy(){
       const [a,b] = this.shown();
-      const names = { water:'water', frost:'frost and heat safety', soil:'soil health', cover:'ground cover', income:'income' };
-      const diffs = METRICS.map(m=>({k:m.k, d:a.s[m.k]-b.s[m.k]})).sort((x,y)=>y.d-x.d);
-      const up = diffs.filter(x=>x.d>=3).slice(0,2).map(x=>names[x.k]);
-      const down = diffs.filter(x=>x.d<=-3).slice(-1).map(x=>names[x.k]);
-      let t = '"' + PLAIN[a.r.id].name + '" comes first for your answers';
+      const diffs = METRICS.map(k => ({ k, d:a.s[k]-b.s[k] })).sort((x,y) => y.d-x.d);
+      const up = diffs.filter(x => x.d>=3).slice(0,2).map(x => NAMES[x.k]);
+      const down = diffs.filter(x => x.d<=-3).slice(-1).map(x => NAMES[x.k]);
+      let t = '"' + a.r.name + '" comes first for your answers';
       t += up.length ? ' because it does better on ' + up.join(' and ') : '';
       t += down.length ? ', though it is weaker on ' + down[0] + '.' : '.';
-      const gap = a.s.total - b.s.total;
-      if (gap < 4) t += ' The top plans are very close, so a small change in your answers can swap them.';
+      if (a.s.total - b.s.total < 4) t += ' The top plans are very close, so a small change in your answers can swap them.';
       return t;
     },
     plainNotes(){
-      const n = [], ids = this.shown().map(x=>x.r.id), L = this.L;
-      if (this.w.cover >= 3 && (ids.includes('barley') || ids.includes('oat')))
+      const n = [], ks = uniq(this.shown().flatMap(x => x.r.years));
+      if (this.w.cover >= 3 && ks.some(k => ['barley','oats','oathay','vetchoat'].includes(k)))
         n.push('Barley and oats keep stubble on the field through April and May, when the wind is strongest here.');
+      if (this.w.feed >= 3)
+        n.push('Because feeding your animals matters to you, plans with hay crops (oats, vetch-oat mix, alfalfa) move up.');
       if (this.drier){
-        const wet = this.ranked(false,this.hotter).find(x=>x.r.id==='base').rank, now = this.ranked().find(x=>x.r.id==='base').rank;
-        if (now < wet) n.push('In a dry year the usual bare rest year moves up the list, because the water it saves matters more. But the bare soil can blow away in spring winds.');
+        const wet = this.ranked(false,this.hotter).find(x => x.r.id==='base'), now = this.ranked().find(x => x.r.id==='base');
+        if (wet && now && now.rank < wet.rank) n.push('In a dry year the usual bare rest year moves up the list, because the water it saves matters more. But the bare soil can blow away in spring winds.');
         else n.push('In a dry year, plans that save water become more important. A bare rest year saves water but leaves soil open to spring winds.');
-        n.push(this.irrig ? 'You said you can water this field, so potatoes are not marked down for dry-year rain.' : 'Potatoes drop in a dry year. They need much more water than falls here unless the field is watered.');
+        n.push(this.irrig ? 'You said you can water this field, so thirsty crops like potatoes are not marked down for dry-year rain.' : 'Thirsty crops (potatoes, maize, sunflower, alfalfa) drop in a dry year. They need much more water than falls here unless the field is watered.');
       }
-      if (this.hotter) n.push('In a short, hot season, rapeseed, potatoes and peas are the most at risk from early frost and July heat.');
+      if (this.hotter) n.push('In a short, hot season, long-season crops (sunflower, maize, chickpeas, potatoes) and heat-sensitive ones (peas, lentils, rapeseed) are most at risk.');
       return n;
     },
     plainEvidence(it){
-      const L = this.L, crops = [...new Set(it.r.years)].map(y=>CROPS[y]).filter(c=>!c.fallow);
+      const L = this.L, keys = uniq(it.r.years).filter(k => !CROPS[k].fallow), crops = keys.map(k => CROPS[k]);
       const ev = [];
       ev.push((this.drier ? 'In a dry summer' : 'In a normal summer') + ' this area gets about ' + this.rain() + ' mm of rain from June to August.');
-      ev.push('There are about ' + this.ffd() + ' days between the last spring frost and the first autumn frost' + (this.hotter ? ' in a short season.' : '.') + ' ' + crops.map(c => CROPWORD[Object.keys(CROPS).find(k=>CROPS[k]===c)] + ' needs about ' + c.need).join(', ') + '.');
-      ev.push('July averages about ' + this.julyT().toFixed(1) + '°C.' + (crops.some(c=>c.heat) ? ' Some crops in this plan suffer when July is hot.' : ''));
-      ev.push('Spring wind averages about ' + L.springWind.toFixed(1) + ' m/s in April and May. This plan leaves the soil bare in ' + it.bareWin + ' windy-season months over 3 years.');
+      ev.push('There are about ' + this.ffd() + ' days between the last spring frost and the first autumn frost' + (this.hotter ? ' in a short season.' : '.') + ' ' + crops.map(c => c.word + ' needs about ' + c.need).join(', ') + '.');
+      ev.push('July averages about ' + this.julyT().toFixed(1) + '°C.' + (crops.some(c => c.heat) ? ' Some crops in this plan suffer when July is hot.' : ''));
+      ev.push('Spring wind averages about ' + L.springWind.toFixed(1) + ' m/s in April and May. This plan leaves the soil bare in ' + it.bareWin + ' windy-season months over ' + it.r.n + ' years.');
       if (L.rainMin != null) ev.push('From ' + this.meta.start + ' to ' + this.meta.end + ', summer rain ranged from ' + L.rainMin + ' to ' + L.rainMax + ' mm and days without frost from ' + L.ffdMin + ' to ' + L.ffdMax + '.');
       if (this.irrig) ev.push('You can water this field, so we add about ' + IRRIGATION_MM + ' mm to the rain each crop year.');
-      const keys = [...new Set(it.r.years)].filter(y => !CROPS[y].fallow);
-      const g = L.gaez || {};
-      const checked = keys.filter(k => g[k]);
-      ev.push(checked.length ? 'FAO GAEZ crop suitability: ' + checked.map(k => CROPWORD[k] + ' ' + g[k]).join(', ') + '.' : 'FAO GAEZ crop suitability: not checked yet for this area.');
+      const checked = crops.filter(c => c.gaez && c.gaez[this.loc]);
+      ev.push(checked.length ? 'FAO GAEZ crop suitability here: ' + checked.map(c => c.word + ' ' + c.gaez[this.loc]).join(', ') + '.' : 'FAO GAEZ crop suitability: not checked yet for this area.');
       ev.push(this.dataStatus==='live' || L.live ? 'Source: NASA POWER daily data, ' + this.meta.start + '–' + this.meta.end + ', for an area of about 55 × 40 km.' : 'Source: NASA POWER daily data, 2001–2025, saved 14 November 2026, for an area of about 55 × 40 km.');
       return ev;
     },
     cardWhy(it){
       const t = it.r.why.slice();
       if (it.r.id !== 'base'){
-        const base = this.scoreRot(ROTS[0]);
-        const names = { water:'water', frost:'frost and heat safety', soil:'soil health', cover:'ground cover', income:'income' };
-        const up = METRICS.map(m=>({k:m.k,d:it.s[m.k]-base.s[m.k]})).filter(x=>x.d>=5).map(x=>names[x.k]);
+        const base = this.ranked().find(x => x.r.id === 'base');
+        const up = base ? METRICS.map(k => ({ k, d:it.s[k]-base.s[k] })).filter(x => x.d>=5).map(x => NAMES[x.k]) : [];
         if (up.length) t.push('Compared with the usual plan, it does better on ' + up.join(', ') + '.');
       }
       return t;
-    }
+    },
+
+    /* field strip */
+    cellClass(st,m){ return st==='B' ? (winterMonth(m) ? 'BW' : 'BS') : st; },
+    isSel(id,y,m){ return this.sel && this.sel.id===id && this.sel.y===y && this.sel.m===m; },
+    explainCell(r,cal,y,m){
+      if (!cal[y]) return '';
+      const n = r.years.length, c = eff(r.years,y), p = eff(r.years,(y-1+n)%n);
+      const st = cal[y][m], tpl = c.cal[m], wind = this.L.springWind.toFixed(1), lc = s => s.charAt(0).toLowerCase() + s.slice(1);
+      if (tpl==='P'){
+        if (st==='S') return 'Stubble or residue from last year\'s ' + lc(p.name) + ' is still on the field. It traps snow and slows the wind' + (m>=3 ? ' during the windy spring (about ' + wind + ' m/s).' : '.');
+        return 'Soil left bare after last year\'s ' + lc(p.name) + '. It is open to the wind' + (m>=3 ? ', and April and May are the windiest months (about ' + wind + ' m/s).' : ' through winter.');
+      }
+      if (c.fallow){
+        if (st==='S') return 'Stubble rest year: last crop\'s stubble stays standing. Weeds are controlled without tillage, so moisture is stored while the soil stays covered.';
+        return 'Bare rest year: the field is cultivated repeatedly to kill weeds and store moisture, so the soil is bare' + (winterMonth(m) ? ' into the windy season.' : ' through summer.');
+      }
+      const firstC = c.cal.indexOf('C'), lastC = c.cal.lastIndexOf('C');
+      if (st==='B'){
+        if (m > lastC) return c.bare || 'After harvest little residue is left, so the soil is bare.';
+        if (m > c.cal.indexOf('B')) return 'Young ' + lc(c.name) + ' plants in wide rows, so most of the soil is still uncovered.';
+        return 'Seedbed prepared and ' + lc(c.name) + ' sown. Soil is mostly bare until the crop grows.';
+      }
+      if (st==='C') return c.name + ' is growing: roots hold the soil and the crop is using water.' + (m===6 && c.heat ? ' July heat matters here: this crop is heat-sensitive.' : '');
+      if (m < firstC) return c.name + ' is resting over winter. Its crowns and old stems cover the soil.';
+      return c.name + ' harvested. Stubble or regrowth is left to trap snow and protect the soil until next season.';
+    },
+
+    /* crop library */
+    groupList(){ this.cropsVer; return GROUPS.map(g => ({ k:g.k, t:g.t, crops:Object.values(CROPS).filter(c => c.group === g.k) })).filter(g => g.crops.length); },
+    allCrops(){ this.cropsVer; return Object.values(CROPS); },
+    fit(c){ const d = this.ffd() - c.need; return d >= 10 ? { t:'Fits the season', cls:'ok' } : d >= 0 ? { t:'Tight fit', cls:'mid' } : { t:'Season too short', cls:'bad' }; },
+    waterWord(c){ return c.D <= 250 ? 'Low' : c.D <= 320 ? 'Medium' : 'High'; },
+    soilWord(c){ return c.soil >= 70 ? 'Builds the soil' : c.soil >= 40 ? 'Neutral' : 'Hard on the soil'; },
+    feedWord(c){ return c.feed >= 70 ? 'Very good' : c.feed >= 30 ? 'Some' : 'Little'; },
+    gaezOf(c){ return (c.gaez && c.gaez[this.loc]) || 'Not checked yet'; },
+    gaezCount(){ this.cropsVer; return Object.values(CROPS).filter(c => c.gaez && Object.values(c.gaez).some(Boolean)).length; },
+    miniClass(ch,m){ return ch==='P' ? 'P' : this.cellClass(ch,m); }
   };
-  Object.defineProperties(d, Object.getOwnPropertyDescriptors(extra));
-  return d;
 }
+
 </script>
 <script>(()=>{var bt=!1,Et=!1,B=[],vt=-1,Fe=!1,wt=!1;function gr(e){ai(e)}function xr(){wt=!0}function yr(){wt=!1,br()}function ai(e){B.includes(e)||(B.push(e),e._x_schedulerPriority!==void 0&&(Fe=!0)),br()}function ue(e){let t=B.indexOf(e);t!==-1&&t>vt&&B.splice(t,1)}function br(){if(!Et&&!bt){if(wt)return;bt=!0,queueMicrotask(ci)}}function ci(){bt=!1,Et=!0;for(let e=0;e<B.length;e++)Fe&&li(e),B[e](),vt=e;B.length=0,vt=-1,Fe=!1,Et=!1}function li(e){let t=new Map,r=B.slice(e).sort((n,i)=>fi(n,i,t));for(let n=0;n<r.length;n++)B[e+n]=r[n];Fe=!1}function fi(e,t,r){return yt(e)?yt(t)?_r(e._x_schedulerPriority.el,r)-_r(t._x_schedulerPriority.el,r)||e._x_schedulerPriority.order-t._x_schedulerPriority.order:-1:yt(t)?1:0}function yt(e){return e._x_schedulerPriority!==void 0}function _r(e,t){if(t.has(e))return t.get(e);let r=0,n=e;for(;e;)r++,e._x_teleportBack?e=e._x_teleportBack:typeof ShadowRoot=="function"&&e.parentNode instanceof ShadowRoot?e=e.parentNode.host:e=e.parentElement;return t.set(n,r),r}var D,P,H,At,ui=0,St=!0;function Er(e){St=!1,e(),St=!0}function vr(e){D=e.reactive,H=e.release,P=t=>e.effect(t,{scheduler:r=>{St?gr(r):r()}}),At=e.raw}function Tt(e){P=e}function wr(e){let t=()=>{};return[(n,i)=>{let o=i?.priority==="structural"?ui++:void 0,s=P(n);return o!==void 0&&s!==void 0&&(s._x_schedulerPriority={el:e,order:o}),e._x_effects||(e._x_effects=new Set,e._x_runEffects=()=>{e._x_effects.forEach(a=>a())}),e._x_effects.add(s),t=()=>{s!==void 0&&(e._x_effects.delete(s),H(s))},s},()=>{t()}]}function Ve(e,t){let r=!0,n,i,o=P(()=>{let s=e(),a=JSON.stringify(s);if(!r&&(typeof s=="object"||s!==n)){let c=typeof n=="object"?JSON.parse(i):n;queueMicrotask(()=>{t(s,c)})}n=s,i=a,r=!1});return()=>{ue(o),H(o)}}async function Sr(e){xr();try{await e(),await Promise.resolve()}finally{yr()}}var Ar=[],Tr=[],Or=[];function Nr(e){Or.push(e)}function de(e,t){typeof t=="function"?(e._x_cleanups||(e._x_cleanups=[]),e._x_cleanups.push(t)):(t=e,Tr.push(t))}function Be(e){Ar.push(e)}function He(e,t,r){e._x_attributeCleanups||(e._x_attributeCleanups={}),e._x_attributeCleanups[t]||(e._x_attributeCleanups[t]=[]),e._x_attributeCleanups[t].push(r)}function Ot(e,t){e._x_attributeCleanups&&Object.entries(e._x_attributeCleanups).forEach(([r,n])=>{(t===void 0||t.includes(r))&&(n.forEach(i=>i()),delete e._x_attributeCleanups[r])})}function Cr(e){for(e._x_effects?.forEach(ue);e._x_cleanups?.length;)e._x_cleanups.pop()()}var Ue=new MutationObserver(qe),Nt=!1;function we(){Ue.observe(document,{subtree:!0,childList:!0,attributes:!0,attributeOldValue:!0}),Nt=!0}function Ct(){di(),Ue.disconnect(),Nt=!1}var Z=[];function di(){let e=Ue.takeRecords();Z.push(()=>e.length>0&&qe(e));let t=Z.length;queueMicrotask(()=>{if(Z.length===t)for(;Z.length>0;)Z.shift()()})}function Rr(){for(;Z.length>0;)Z.shift()();let e=Ue.takeRecords();e.length>0&&qe(e)}function h(e){if(!Nt)return e();Ct();try{return e()}finally{we()}}var Rt=!1,$e=[];function Dr(){Rt=!0}function Mr(){Rt=!1,qe($e),$e=[]}function qe(e){if(Rt){$e=$e.concat(e);return}let t=[],r=new Set,n=new Map,i=new Map;for(let o=0;o<e.length;o++)if(!e[o].target._x_ignoreMutationObserver&&(e[o].type==="childList"&&(e[o].removedNodes.forEach(s=>{s.nodeType===1&&s._x_marker&&r.add(s)}),e[o].addedNodes.forEach(s=>{if(s.nodeType===1){if(r.has(s)){r.delete(s);return}s._x_marker||t.push(s)}})),e[o].type==="attributes")){let s=e[o].target,a=e[o].attributeName,c=e[o].oldValue,l=()=>{n.has(s)||n.set(s,[]),n.get(s).push({name:a,value:s.getAttribute(a)})},f=()=>{i.has(s)||i.set(s,[]),i.get(s).push(a)};s.hasAttribute(a)&&c===null?l():s.hasAttribute(a)?(f(),l()):f()}i.forEach((o,s)=>{Ot(s,o)}),n.forEach((o,s)=>{Ar.forEach(a=>a(s,o))});for(let o of r)t.some(s=>s.contains(o))||Tr.forEach(s=>s(o));for(let o of t)o.isConnected&&Or.forEach(s=>s(o));t=null,r=null,n=null,i=null}function ze(e){return L(U(e))}function I(e,t,r){return e._x_dataStack=[t,...U(r||e)],()=>{e._x_dataStack=e._x_dataStack.filter(n=>n!==t)}}function U(e){return e._x_dataStack?e._x_dataStack:typeof ShadowRoot=="function"&&e instanceof ShadowRoot?U(e.host):e.parentNode?U(e.parentNode):[]}function L(e){return new Proxy({objects:e},pi)}function kr(e,t){return e===null||e===Object.prototype?null:Object.prototype.hasOwnProperty.call(e,t)?e:kr(Object.getPrototypeOf(e),t)}var pi={ownKeys({objects:e}){return Array.from(new Set(e.flatMap(t=>Object.keys(t))))},has({objects:e},t){return t==Symbol.unscopables?!1:e.some(r=>Object.prototype.hasOwnProperty.call(r,t)||Reflect.has(r,t))},get({objects:e},t,r){return t=="toJSON"?hi:Reflect.get(e.find(n=>Reflect.has(n,t))||{},t,r)},set({objects:e},t,r,n){let i;for(let s of e)if(i=kr(s,t),i)break;i||(i=e[e.length-1]);let o=Object.getOwnPropertyDescriptor(i,t);return o?.set&&o?.get?o.set.call(n,r)||!0:Reflect.set(i,t,r)}};function hi(){return Reflect.ownKeys(this).reduce((t,r)=>(t[r]=Reflect.get(this,r),t),{})}function pe(e,t=()=>{}){let r=i=>typeof i=="object"&&!Array.isArray(i)&&i!==null,n=(i,o="")=>{Object.entries(Object.getOwnPropertyDescriptors(i)).forEach(([s,{value:a,enumerable:c}])=>{if(c===!1||a===void 0||typeof a=="object"&&a!==null&&a.__v_skip)return;let l=o===""?s:`${o}.${s}`;typeof a=="object"&&a!==null&&a._x_interceptor?i[s]=a.initialize(e,l,s,t):r(a)&&a!==i&&!(a instanceof Element)&&n(a,l)})};return n(e)}function Ke(e,t=()=>{}){let r={initialValue:void 0,_x_interceptor:!0,initialize(n,i,o,s){return e(this.initialValue,()=>mi(n,i),a=>Dt(n,i,a),i,o,s)}};return t(r),n=>{if(typeof n=="object"&&n!==null&&n._x_interceptor){let i=r.initialize.bind(r);r.initialize=(o,s,a,c)=>{let l=n.initialize(o,s,a,c);return r.initialValue=l,i(o,s,a,c)}}else r.initialValue=n;return r}}function mi(e,t){return t.split(".").reduce((r,n)=>r[n],e)}function Dt(e,t,r){if(typeof t=="string"&&(t=t.split(".")),t.length===1)e[t[0]]=r;else{if(t.length===0)throw error;return e[t[0]]||(e[t[0]]={}),Dt(e[t[0]],t.slice(1),r)}}var Pr={};function b(e,t){Pr[e]=t}function G(e,t){let r=_i(t);return Object.entries(Pr).forEach(([n,i])=>{Object.defineProperty(e,`$${n}`,{get(){return i(t,r)},enumerable:!1})}),e}function _i(e){let[t,r]=Mt(e),n={interceptor:Ke,...t};return de(e,r),n}function Ir(e,t,r,...n){try{return r(...n)}catch(i){Y(i,e,t)}}function Y(...e){return Lr(...e)}var Lr=gi;function jr(e){Lr=e}function gi(e,t,r=void 0){e=Object.assign(e??{message:"No error message given."},{el:t,expression:r}),console.warn(`Alpine Expression Error: ${e.message}
 
