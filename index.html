@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Shift — Mongolia Wheat-Belt Rotation Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky:#EAF0F4; --paper:#FFFFFF; --ink:#16252D; --muted:#55636B; --line:#D3DDE3;
+    --blue:#1D4E89; --blue-soft:#DCE7F3; --gold:#D9A321; --gold-soft:#FBF1D6;
+    --grow:#2E7D4F; --stubble:#B8D58F; --bare-sum:#E3A72F; --bare-win:#C4453A;
+    --r-lg:16px; --r-sm:8px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--sky);color:var(--ink);
+    font:17px/1.55 "Atkinson Hyperlegible",ui-sans-serif,system-ui,"Segoe UI",Arial,sans-serif}
+  .num{font-variant-numeric:tabular-nums}
+  [x-cloak]{display:none!important}
+  button{font:inherit;color:inherit;cursor:pointer}
+  :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  a{color:var(--blue)}
+  h1,h2,h3{line-height:1.2;margin:0}
+
+  /* top band: field rows in the season colours */
+  .band{height:10px;background:repeating-linear-gradient(90deg,var(--grow) 0 64px,var(--stubble) 64px 128px,var(--bare-sum) 128px 160px,var(--stubble) 160px 224px,var(--grow) 224px 300px,var(--bare-win) 300px 320px)}
+  .top{max-width:1200px;margin:0 auto;padding:22px 24px 8px;display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap}
+  .top h1{font-size:30px;font-weight:700;letter-spacing:-.01em;max-width:22ch}
+  .top p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+  nav{margin-left:auto;display:flex;gap:6px}
+  nav button{border:2px solid transparent;background:transparent;padding:8px 14px;border-radius:999px;font-weight:700;color:var(--muted)}
+  nav button[aria-current="page"]{background:var(--paper);border-color:var(--blue);color:var(--blue)}
+
+  .page{max-width:1200px;margin:0 auto;padding:12px 24px 48px}
+  .layout{display:grid;grid-template-columns:360px 1fr;gap:28px;align-items:start}
+
+  /* ---------- left: three questions ---------- */
+  .ask{background:var(--paper);border-radius:var(--r-lg);padding:20px;border:1px solid var(--line)}
+  .q + .q{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+  .q h2{font-size:18px;display:flex;gap:10px;align-items:center}
+  .step{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:15px;flex:none}
+  .q .hint{color:var(--muted);font-size:15px;margin:4px 0 12px 38px}
+  .choices{display:grid;gap:8px}
+  .choice{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;background:var(--paper);border:2px solid var(--line);border-radius:var(--r-sm);padding:10px 12px}
+  .choice small{display:block;color:var(--muted);font-size:14px}
+  .choice[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft)}
+  .choice .tick{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+  .choice[aria-pressed="true"] .tick{background:var(--blue);border-color:var(--blue)}
+  .choice[aria-pressed="true"] .tick::after{content:"";width:8px;height:8px;border-radius:50%;background:#fff}
+  .prio{display:grid;gap:12px}
+  .prio .name{font-weight:700;font-size:16px}
+  .lvl{display:grid;grid-template-columns:repeat(3,1fr);margin-top:5px;border:2px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+  .lvl button{border:0;border-right:2px solid var(--line);background:var(--paper);padding:7px 4px;font-size:14px}
+  .lvl button:last-child{border-right:0}
+  .lvl.two{grid-template-columns:1fr 1fr}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .chip{border:2px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 12px;font-size:15px;color:var(--muted)}
+  .chip[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft);color:var(--blue);font-weight:700}
+  .setaside{margin-top:10px;font-size:15px;color:var(--muted)}
+  .how dl{margin:8px 0 0;display:grid;grid-template-columns:200px 1fr;gap:10px 18px}
+  .how dt{font-weight:700}
+  .how dd{margin:0;max-width:62ch}
+  @media (max-width:560px){ .how dl{grid-template-columns:1fr;gap:2px} .how dd{margin-bottom:10px} }
+  .lvl button[aria-pressed="true"]{background:var(--blue);color:#fff;font-weight:700}
+
+  /* ---------- right: results ---------- */
+  .result-head h2{font-size:24px}
+  .result-head p{margin:6px 0 0;color:var(--muted);max-width:68ch}
+  .why{margin-top:16px;background:var(--gold-soft);border-radius:var(--r-lg);padding:16px 18px;border:1px solid #EBD9A3}
+  .why p{margin:0;max-width:72ch}
+  .why ul{margin:10px 0 0;padding-left:20px;max-width:72ch;font-size:16px}
+  .why li{margin:4px 0}
+
+  .opt{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;margin-top:16px}
+  .opt.first{border:2px solid var(--blue)}
+  .others{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .others .opt{margin-top:16px}
+  .badge{display:inline-block;font-size:14px;font-weight:700;border-radius:999px;padding:3px 12px}
+  .badge.first{background:var(--blue);color:#fff}
+  .badge.now{background:var(--sky);color:var(--muted)}
+  .badge.alt{background:var(--blue-soft);color:var(--blue)}
+  .opt h3{font-size:22px;margin-top:10px;max-width:30ch}
+  .others .opt h3{font-size:19px}
+  .opt .sum{margin:6px 0 0;color:var(--muted);max-width:62ch}
+  .match{display:flex;align-items:center;gap:12px;margin-top:14px}
+  .match .track{flex:1;height:10px;background:var(--sky);border-radius:999px;overflow:hidden;max-width:320px}
+  .match .fill{height:100%;background:var(--blue);border-radius:999px;transition:width .3s}
+  .match b{font-size:15px}
+
+  .ratings{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px}
+  .others .ratings{grid-template-columns:1fr;gap:6px}
+  .rate{background:var(--sky);border-radius:var(--r-sm);padding:10px}
+  .others .rate{display:flex;justify-content:space-between;align-items:center;padding:7px 10px}
+  .rate .t{font-size:14px;color:var(--muted)}
+  .rate .w{font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px}
+  .dots{display:inline-flex;gap:3px}
+  .dots i{width:9px;height:9px;border-radius:50%;background:#C5D1D8}
+  .dots i.on{background:var(--blue)}
+
+  /* season strip */
+  .season{margin-top:18px}
+  .season h4{margin:0 0 8px;font-size:16px}
+  .srow{display:grid;grid-template-columns:140px repeat(12,1fr);gap:3px;align-items:center;margin-top:3px}
+  .others .srow{grid-template-columns:78px repeat(12,1fr)}
+  .srow .lab{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mhead span{font-size:13px;color:var(--muted);text-align:center}
+  .cell{height:30px;border:0;border-radius:5px;padding:0}
+  .others .cell{height:22px}
+  .cell.C{background:var(--grow)} .cell.S{background:var(--stubble)} .cell.BS{background:var(--bare-sum)}
+  .cell.BW{background:var(--bare-win) repeating-linear-gradient(135deg,transparent 0 5px,rgba(255,255,255,.28) 5px 8px)}
+  .cell.sel{outline:3px solid var(--ink);outline-offset:1px}
+  .say{margin-top:10px;background:var(--sky);border-radius:var(--r-sm);padding:10px 12px;font-size:15px;min-height:46px}
+  .key{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:14px;color:var(--muted)}
+  .key span{display:inline-flex;align-items:center;gap:6px}
+  .key i{width:14px;height:14px;border-radius:4px;display:inline-block}
+
+  details{margin-top:8px;border-top:1px solid var(--line)}
+  details:first-of-type{margin-top:16px}
+  summary{cursor:pointer;list-style:none;padding:12px 0;font-weight:700;display:flex;justify-content:space-between;gap:10px}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"Show";font-weight:400;color:var(--blue);font-size:15px}
+  details[open] summary::after{content:"Hide"}
+  details ul{margin:0 0 12px;padding-left:20px;max-width:66ch;font-size:16px}
+  details li{margin:5px 0}
+
+  .datastat{display:inline-flex;align-items:center;gap:8px;font-size:15px;margin-top:10px;padding:4px 12px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--muted)}
+  .datastat .dot{width:9px;height:9px;border-radius:50%;background:#9AA8B0}
+  .datastat.live .dot{background:var(--grow)}
+  .datastat.saved .dot{background:var(--gold)}
+  .locbtn{width:100%;margin-bottom:10px;border:2px solid var(--blue);background:var(--paper);color:var(--blue);font-weight:700;border-radius:var(--r-sm);padding:10px}
+  .locbtn:disabled{opacity:.6;cursor:wait}
+  .locmsg{font-size:14px;color:var(--muted);margin:0 0 10px}
+  .st-ok{background:#DDEFE3;color:#1F5E39}
+  .care{margin-top:24px;font-size:15px;color:var(--muted);max-width:75ch}
+  .care b{color:var(--ink)}
+
+  /* ---------- how it works ---------- */
+  .how{max-width:860px}
+  .how section{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;margin-top:16px}
+  .how h2{font-size:22px;margin-bottom:8px}
+  .how p{max-width:72ch;margin:8px 0}
+  .warn{background:var(--gold-soft)!important;border-color:#EBD9A3!important}
+  table{border-collapse:collapse;width:100%;font-size:15px;margin-top:8px}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:700}
+  td.r,th.r{text-align:right}
+  .scroll{overflow-x:auto}
+  .status{font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;white-space:nowrap}
+  .st-p{background:var(--gold-soft);color:#7A5A12}
+  .st-g{background:#F6E1DE;color:#8E2F26}
+  .expert summary::after{content:"Show"}
+
+  @media (max-width:980px){
+    .layout{grid-template-columns:1fr}
+    .ask{position:static}
+    .ratings{grid-template-columns:repeat(2,1fr)}
+    .others{grid-template-columns:1fr}
+  }
+  @media (max-width:560px){
+    body{font-size:16px}
+    .top h1{font-size:24px}
+    nav{margin-left:0}
+    .srow{grid-template-columns:64px repeat(12,1fr);gap:2px}
+    .cell{height:24px}
+    .opt{padding:16px}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div x-data="friendly()" x-init="boot()" x-cloak>
+  <div class="band" aria-hidden="true"></div>
+  <header class="top">
+    <div>
+      <h1>Find a crop rotation that fits your farm and your weather</h1>
+      <p>Answer four quick questions. We compare seven rotation plans using NASA climate data for Mongolia's wheat belt.</p>
+      <p class="datastat" :class="dataStatus"><span class="dot"></span><span x-text="dataLine()"></span></p>
+    </div>
+    <nav aria-label="Pages">
+      <button :aria-current="tab==='desk' ? 'page' : null" @click="tab='desk'">Compare plans</button>
+      <button :aria-current="tab==='data' ? 'page' : null" @click="tab='data'">How this works</button>
+    </nav>
+  </header>
+
+  <main class="page">
+    <!-- ================= COMPARE PLANS ================= -->
+    <div class="layout" x-show="tab==='desk'">
+      <aside class="ask" aria-label="Your farm">
+        <div class="q">
+          <h2><span class="step">1</span>Where is your farm?</h2>
+          <p class="hint">Pick the closest area, or let your phone find it.</p>
+          <button class="locbtn" @click="useMyLocation()" :disabled="locBusy"><span x-text="locBusy ? 'Finding your farm…' : 'Use my location'"></span></button>
+          <p class="locmsg" x-show="locMsg" x-text="locMsg"></p>
+          <div class="choices">
+            <template x-for="(l,k) in LOC" :key="k">
+              <button class="choice" :aria-pressed="loc===k" @click="loc=k; sel=null">
+                <span><span x-text="l.name"></span><small x-text="l.aimag + ' province'"></small></span><span class="tick"></span>
+              </button>
+            </template>
+          </div>
+        </div>
+
+        <div class="q">
+          <h2><span class="step">2</span>What matters most to you?</h2>
+          <p class="hint">Choose how important each goal is.</p>
+          <div class="prio">
+            <template x-for="p in GOALS" :key="p.k">
+              <div>
+                <div class="name" x-text="p.label"></div>
+                <div class="lvl" role="group" :aria-label="p.label">
+                  <template x-for="o in LEVELS" :key="o.v">
+                    <button :aria-pressed="w[p.k]===o.v" @click="w[p.k]=o.v" x-text="o.t"></button>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <div class="q">
+          <h2><span class="step">3</span>What kind of year should we plan for?</h2>
+          <p class="hint">See how the plans hold up in a hard year.</p>
+          <div class="choices">
+            <template x-for="y in YEARS" :key="y.k">
+              <button class="choice" :aria-pressed="yearType()===y.k" @click="setYear(y.k)">
+                <span><span x-text="y.t"></span><small x-text="y.d"></small></span><span class="tick"></span>
+              </button>
+            </template>
+          </div>
+        </div>
+        <div class="q">
+          <h2><span class="step">4</span>Tell us about your field</h2>
+          <p class="hint">Plans that don't fit your farm are set aside.</p>
+          <div class="prio">
+            <div>
+              <div class="name">What is your soil like?</div>
+              <div class="lvl" role="group" aria-label="Soil type">
+                <template x-for="(s,k) in SOILS" :key="k"><button :aria-pressed="soilType===k" @click="soilType=k" x-text="s.name"></button></template>
+              </div>
+            </div>
+            <div>
+              <div class="name">Can you water this field?</div>
+              <div class="lvl two" role="group" aria-label="Irrigation">
+                <button :aria-pressed="irrig" @click="irrig=true">Yes</button><button :aria-pressed="!irrig" @click="irrig=false">No</button>
+              </div>
+            </div>
+            <div>
+              <div class="name">Do you have a no-till seeder?</div>
+              <div class="lvl two" role="group" aria-label="No-till seeder">
+                <button :aria-pressed="seeder" @click="seeder=true">Yes</button><button :aria-pressed="!seeder" @click="seeder=false">No</button>
+              </div>
+            </div>
+            <div>
+              <div class="name">Is there a buyer near you for…</div>
+              <div class="chips">
+                <template x-for="b in BUYERS" :key="b.k">
+                  <button class="chip" :aria-pressed="buyers[b.k]" @click="buyers[b.k]=!buyers[b.k]"><span x-text="buyers[b.k] ? '✓' : '✕'"></span> <span x-text="b.t"></span></button>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <section aria-live="polite">
+        <div class="result-head">
+          <h2 x-text="'Three plans worth a closer look near ' + L.name"></h2>
+          <p>The plan at the top matches your answers most closely. It is a starting point to talk over with your family and a local agronomist, not a final answer.</p>
+        </div>
+
+        <div class="why">
+          <p x-text="plainWhy()"></p>
+          <ul x-show="plainNotes().length">
+            <template x-for="n in plainNotes()" :key="n"><li x-text="n"></li></template>
+          </ul>
+          <p class="setaside" x-show="hidden().length" x-text="'Set aside because of your field answers: ' + hidden().map(h => PLAIN[h.r.id].name + ' (' + h.why.join(', ') + ')').join('; ') + '.'"></p>
+        </div>
+
+        <!-- lead plan -->
+        <template x-for="it in shown().slice(0,1)" :key="it.r.id">
+          <article class="opt first">
+              <div>
+                <span class="badge first">Closest match to your answers</span>
+                <template x-if="it.r.id==='base'"><span class="badge now" style="margin-left:6px">What many farms do now</span></template>
+                <h3 x-text="PLAIN[it.r.id].name"></h3>
+                <p class="sum" x-text="PLAIN[it.r.id].sum"></p>
+                <div class="match"><div class="track"><div class="fill" :style="'width:'+it.s.total+'%'"></div></div><b class="num" x-text="matchWord(it.s.total)+' · '+Math.round(it.s.total)+' of 100'"></b></div>
+
+                <div class="ratings">
+                  <template x-for="m in RATE" :key="m.k">
+                    <div class="rate"><div class="t" x-text="m.t"></div>
+                      <div class="w"><span x-text="word(it.s[m.k])"></span>
+                        <span class="dots" :aria-label="Math.round(it.s[m.k])+' of 100'"><template x-for="d in 5"><i :class="d <= dots(it.s[m.k]) && 'on'"></i></template></span></div></div>
+                  </template>
+                </div>
+
+                <div class="season">
+                  <h4>What the field looks like through the year</h4>
+                  <div class="srow mhead"><span></span><template x-for="m in MONTHS"><span x-text="m.slice(0,1)"></span></template></div>
+                  <template x-for="(yr,yi) in it.cal" :key="yi">
+                    <div class="srow">
+                      <span class="lab" x-text="'Year '+(yi+1)+': '+CROPWORD[it.r.years[yi]]"></span>
+                      <template x-for="(st,mi) in yr" :key="mi">
+                        <button class="cell" :class="[cellClass(st,mi), isSel(it.r.id,yi,mi) && 'sel']" :aria-label="MONTHS[mi]+', year '+(yi+1)+': '+plainState(st,mi)" @click="sel={id:it.r.id,y:yi,m:mi}"></button>
+                      </template>
+                    </div>
+                  </template>
+                  <div class="say">
+                    <span x-show="sel && sel.id===it.r.id" x-text="sel && sel.id===it.r.id ? MONTHS[sel.m]+', year '+(sel.y+1)+': '+explainCell(it.r,it.cal,sel.y,sel.m) : ''"></span>
+                    <span x-show="!(sel && sel.id===it.r.id)" style="color:var(--muted)">Tap any month to see what is happening in the field.</span>
+                  </div>
+                  <div class="key">
+                    <span><i style="background:var(--grow)"></i>Crop growing</span>
+                    <span><i style="background:var(--stubble)"></i>Stubble left standing</span>
+                    <span><i style="background:var(--bare-sum)"></i>Bare soil in summer</span>
+                    <span><i class="cell BW" style="height:14px"></i>Bare soil in the windy season</span>
+                  </div>
+                </div>
+
+                <details><summary>Why this plan could work</summary><ul><template x-for="t in cardWhy(it)"><li x-text="t"></li></template></ul></details>
+                <details><summary>What the NASA data shows</summary><ul><template x-for="t in plainEvidence(it)"><li x-text="t"></li></template></ul></details>
+                <details><summary>Good things about it</summary><ul><template x-for="t in it.r.benefits"><li x-text="t"></li></template></ul></details>
+                <details><summary>Check with a local expert</summary><ul><template x-for="t in it.r.unknowns.concat(PLAIN_UNKNOWNS)"><li x-text="t"></li></template></ul></details>
+              </div>
+          </article>
+        </template>
+
+        <!-- the other two -->
+        <div class="others">
+          <template x-for="it in shown().slice(1)" :key="it.r.id">
+            <article class="opt">
+              <span class="badge" :class="it.r.id==='base' ? 'now' : 'alt'" x-text="it.r.id==='base' ? 'What many farms do now' : 'Also worth a look'"></span>
+              <h3 x-text="PLAIN[it.r.id].name"></h3>
+              <p class="sum" x-text="PLAIN[it.r.id].sum"></p>
+              <div class="match"><div class="track"><div class="fill" :style="'width:'+it.s.total+'%'"></div></div><b class="num" x-text="matchWord(it.s.total)+' · '+Math.round(it.s.total)"></b></div>
+              <div class="ratings">
+                <template x-for="m in RATE" :key="m.k">
+                  <div class="rate"><span class="t" x-text="m.t"></span>
+                    <span class="w"><span x-text="word(it.s[m.k])"></span><span class="dots"><template x-for="d in 5"><i :class="d <= dots(it.s[m.k]) && 'on'"></i></template></span></span></div>
+                </template>
+              </div>
+              <div class="season">
+                <h4>Field through the year</h4>
+                <div class="srow mhead"><span></span><template x-for="m in MONTHS"><span x-text="m.slice(0,1)"></span></template></div>
+                <template x-for="(yr,yi) in it.cal" :key="yi">
+                  <div class="srow">
+                    <span class="lab" x-text="'Y'+(yi+1)+' '+CROPWORD[it.r.years[yi]]"></span>
+                    <template x-for="(st,mi) in yr" :key="mi">
+                      <button class="cell" :class="[cellClass(st,mi), isSel(it.r.id,yi,mi) && 'sel']" :aria-label="MONTHS[mi]+', year '+(yi+1)+': '+plainState(st,mi)" @click="sel={id:it.r.id,y:yi,m:mi}"></button>
+                    </template>
+                  </div>
+                </template>
+                <div class="say">
+                  <span x-show="sel && sel.id===it.r.id" x-text="sel && sel.id===it.r.id ? MONTHS[sel.m]+', year '+(sel.y+1)+': '+explainCell(it.r,it.cal,sel.y,sel.m) : ''"></span>
+                  <span x-show="!(sel && sel.id===it.r.id)" style="color:var(--muted)">Tap a month to see what is happening.</span>
+                </div>
+              </div>
+              <details><summary>Why this plan could work</summary><ul><template x-for="t in cardWhy(it)"><li x-text="t"></li></template></ul></details>
+              <details><summary>What the NASA data shows</summary><ul><template x-for="t in plainEvidence(it)"><li x-text="t"></li></template></ul></details>
+              <details><summary>Good things about it</summary><ul><template x-for="t in it.r.benefits"><li x-text="t"></li></template></ul></details>
+              <details><summary>Check with a local expert</summary><ul><template x-for="t in it.r.unknowns.concat(PLAIN_UNKNOWNS)"><li x-text="t"></li></template></ul></details>
+            </article>
+          </template>
+        </div>
+
+        <p class="care"><b>This tool helps you think, it does not decide for you.</b> It does not predict harvests or prices. Your own experience and advice from a local agronomist matter more than any score here. <span x-text="dataStatus==='live' ? 'Weather numbers come from NASA and update automatically every month.' : 'The weather numbers on this copy are NASA data saved on 14 November 2026. On the live site they update automatically every month.'"></span></p>
+      </section>
+    </div>
+
+    <!-- ================= HOW THIS WORKS ================= -->
+    <div class="how" x-show="tab==='data'">
+      <section>
+        <h2>How this works, in short</h2>
+        <p>For each area, we look at how much rain falls in summer, how many days are free of frost, how hot July gets, and how windy spring is. These come from NASA POWER, a free NASA service that turns satellite and weather-model data into daily weather records.</p>
+        <p>We then check each rotation plan against that weather: does the crop get enough water, will it finish before frost, does it build the soil, does it keep the ground covered in windy months, and can it earn money? Your answers decide which of these count most.</p>
+      </section>
+
+      <section>
+        <h2>How sure can you be?</h2>
+        <p>Weather changes a lot from year to year. That is why you can test a dry year and a short, hot season, not just an average year. Once the full NASA download is loaded, each plan also shows the lowest and highest rain and frost-free days seen in 2001–2025.</p>
+        <p>The plans are compared with simple rules you can check, not a hidden computer model. We chose this so farmers and agronomists can see exactly why a plan comes first and disagree with it where their experience says otherwise.</p>
+      </section>
+
+      <section>
+        <h2>Satellite data and your own eyes</h2>
+        <p>NASA data covers large areas, about 55 × 40 km for each number here, and the same way every year, everywhere. That makes it good for seeing long-term patterns like dry years and frost dates. It cannot see your field's slope, a wet hollow or a windbreak.</p>
+        <p>What you see on the ground is the opposite: very detailed, but only for one place. The best decisions use both. If your field is often drier, frostier or windier than your neighbours', give that more weight than our numbers.</p>
+      </section>
+
+      <section>
+        <h2>Words to know</h2>
+        <dl>
+          <dt>Crop rotation</dt><dd>Growing different crops on the same field in turn, year after year, instead of the same crop every year.</dd>
+          <dt>Fallow / rest year</dt><dd>A year with no crop. A bare (clean) fallow is cultivated to kill weeds. A stubble fallow keeps last year's stubble standing.</dd>
+          <dt>Days without frost</dt><dd>The days between the last frost in spring and the first frost in autumn. A crop must grow and ripen inside this window.</dd>
+          <dt>Nitrogen-fixing crop</dt><dd>A crop like peas whose roots take nitrogen from the air and leave some in the soil for the next crop.</dd>
+          <dt>Evapotranspiration</dt><dd>Water leaving the field as vapour, from the soil surface and through crop leaves. Hot, windy days raise it.</dd>
+          <dt>Water balance</dt><dd>Rain plus stored soil water, minus what crops and the soil lose. If it goes negative, crops are short of water.</dd>
+          <dt>Soil moisture anomaly</dt><dd>How much wetter or drier the soil is than normal for that time of year. NASA's SMAP satellite measures this.</dd>
+          <dt>NDVI</dt><dd>A satellite measure of how green and leafy a place is, from 0 (bare soil) to about 0.9 (thick green crop).</dd>
+          <dt>Wind erosion</dt><dd>Wind blowing away loose, dry topsoil, the richest layer. It is worst on bare fields in April and May.</dd>
+          <dt>"1 summer in 4"</dt><dd>Our dry-year rain: in a quarter of the years NASA data covers (since 2001), summer rain was this low or lower.</dd>
+        </dl>
+      </section>
+
+      <section x-show="dataStatus==='live'">
+        <h2>The weather data updates itself</h2>
+        <p x-text="'Once a month, a small program downloads 25 years of daily NASA POWER weather for every area and recalculates the numbers. Last update: ' + niceDate(meta.updated) + ', covering ' + meta.start + '–' + meta.end + '. Nobody has to type anything in.'"></p>
+      </section>
+
+      <section class="warn" x-show="dataStatus!=='live'">
+        <h2>This copy uses saved NASA data</h2>
+        <p>The numbers below were downloaded from NASA POWER (daily data, 2001–2025) on 14 November 2026 and saved inside the page, so it also works without internet. On the live site they update automatically every month.</p>
+      </section>
+
+      <section>
+        <h2>Weather in each area</h2>
+        <div class="scroll">
+          <table class="num">
+            <thead><tr><th>Area</th><th class="r">Summer rain (Jun–Aug)</th><th class="r">Rain in a dry year</th><th class="r">Days without frost</th><th class="r">July average</th><th class="r">Spring wind</th><th class="r">Height above sea</th></tr></thead>
+            <tbody>
+              <template x-for="(l,k) in LOC" :key="k">
+                <tr><td x-text="l.name"></td><td class="r" x-text="l.summerRain+' mm'"></td><td class="r" x-text="l.dryRain+' mm'"></td><td class="r" x-text="l.ffd"></td><td class="r" x-text="l.julyT.toFixed(1)+'°C'"></td><td class="r" x-text="l.springWind.toFixed(1)+' m/s'"></td><td class="r" x-text="'about '+l.elev+' m'"></td></tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <p style="color:var(--muted);font-size:15px">Each NASA POWER number covers an area of about 55 × 40 km, so it cannot show differences between one field and the next. Heights are approximate. "Rain in a dry year" is the amount that 1 summer in 4 falls below.</p>
+      </section>
+
+      <section>
+        <h2>Which NASA data is used</h2>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>Data</th><th>Status</th><th>What it tells us</th></tr></thead>
+            <tbody>
+              <tr><td><b>NASA POWER</b>, <span x-text="meta.start+'–'+meta.end"></span><br><a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">power.larc.nasa.gov</a></td><td><span class="status" :class="dataStatus==='live' ? 'st-ok' : 'st-p'" x-text="dataStatus==='live' ? 'Updated automatically' : 'Saved copy'"></span></td><td>Rain, frost, temperature and wind for each area.</td></tr>
+              <tr><td><b>FAO GAEZ</b> crop suitability<br><a href="https://gaez.fao.org/" target="_blank" rel="noopener">gaez.fao.org</a></td><td><span class="status st-g">Not checked yet</span></td><td>A second, independent check of whether each crop suits each area's climate and soil.</td></tr>
+              <tr><td><b>SMAP</b> soil moisture</td><td><span class="status st-g">Not added yet</span></td><td>Would show how much water is stored in the soil. For now we assume a rest year stores a fixed amount.</td></tr>
+              <tr><td><b>GPM</b> rainfall</td><td><span class="status st-g">Not added yet</span></td><td>Would give more detailed rain and storm data.</td></tr>
+              <tr><td><b>MODIS / Landsat</b> satellite images</td><td><span class="status st-g">Not added yet</span></td><td>Would show which months fields are really green or bare. For now the field-through-the-year strip stands in for it.</td></tr>
+              <tr><td><b>ECOSTRESS</b> crop heat</td><td><span class="status st-g">Not added yet</span></td><td>Would show heat and water stress in crops. For now we use July temperature.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="expert">
+        <details style="border:0;margin:0">
+          <summary style="padding:0;font-size:20px">Details for experts: scoring formulas and crop values</summary>
+          <p><b>Inputs.</b> R = summer rain (dry-year value if a dry year is chosen). F = days without frost (−12 for a short, hot season). T = July average (+1.5°C for a short, hot season).</p>
+          <p><b>Water.</b> Mean over the 3 years. Crop year: 100 × clamp(((R + carry) ÷ D − 0.45) ÷ 0.55), D = crop water need, carry = 60 mm after a bare rest year, 80 mm after a stubble rest year, 15 mm after peas. Rest year: 85. Watering adds 150 mm. Soil: sandy holds less (carry × 0.6, −20 mm), heavy holds more (carry × 1.2, +10 mm).</p>
+          <p><b>Frost and heat.</b> Per crop year: clamp(40 + 2 × (F − need)), minus 12 × max(0, T − 18.5) for heat-sensitive crops. Plan = half the worst year + half the average.</p>
+          <p><b>Soil.</b> Mean of the crops' soil values, −10 when a cereal follows a cereal. <b>Ground cover.</b> 100 × (1 − weighted bare months ÷ 30); bare Oct–Mar months count 1, bare Apr–May months count 2; × 1.3 on sandy soil, × 0.85 on heavy soil. <b>Income.</b> Mean of a relative market value (rest year = 0); not a price forecast.</p>
+          <p><b>Match.</b> Weighted average. Low = 0, Medium = 3, High = 5. Frost and heat always weigh 2. Water weighs double in a dry year. Words: Good ≥ 70, Fair 45–69, Weak &lt; 45.</p>
+          <div class="scroll">
+            <table class="num">
+              <thead><tr><th>Crop</th><th class="r">Water need</th><th class="r">Frost-free days needed</th><th class="r">Soil</th><th class="r">Income</th><th>Heat-sensitive</th></tr></thead>
+              <tbody>
+                <template x-for="(c,k) in CROPS" :key="k">
+                  <tr><td x-text="c.name"></td><td class="r" x-text="c.fallow ? '–' : c.D"></td><td class="r" x-text="c.fallow ? '–' : c.need"></td><td class="r" x-text="c.soil"></td><td class="r" x-text="c.income"></td><td x-text="c.fallow ? '–' : (c.heat ? 'yes' : 'no')"></td></tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <p style="color:var(--muted);font-size:15px">Crop values and field calendars are rough classroom estimates for a local agronomist to check and correct.</p>
+        </details>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+
+/* ==== SAVED COPY of data/climate.json (NASA POWER daily, 2001–2025, AG), saved 2026-11-14. The live site loads the monthly-updated file instead. ==== */
+/* Optional fields: rainMin, rainMax, ffdMin, ffdMax (power_summary.py prints them) and
+   gaez:{ wheat:'…', barley:'…', pea:'…', oat:'…', rape:'…', potato:'…' } copied from gaez.fao.org */
+const LOC = {
+  zuunkharaa: { name:'Zuunkharaa', aimag:'Selenge', lat:48.88, lon:106.82, elev:1229, summerRain:221, dryRain:159, ffd:104, julyT:18.1, springWind:2.2, rainMin:77, rainMax:363, ffdMin:75, ffdMax:126 },
+  darkhan: { name:'Darkhan', aimag:'Darkhan-Uul', lat:49.49, lon:105.95, elev:912, summerRain:212, dryRain:152, ffd:113, julyT:19.9, springWind:2.9, rainMin:99, rainMax:349, ffdMin:84, ffdMax:134 },
+  bulgan: { name:'Bulgan', aimag:'Bulgan', lat:48.81, lon:103.53, elev:1340, summerRain:247, dryRain:187, ffd:105, julyT:17.8, springWind:3.0, rainMin:107, rainMax:379, ffdMin:75, ffdMax:129 }
+};
+
+const CROPS = {
+  wheat:   { name:'Spring wheat',          short:'wheat',   D:300, need:90,  soil:40, income:60, heat:false, cereal:true },
+  barley:  { name:'Spring barley',         short:'barley',  D:270, need:80,  soil:45, income:50, heat:false, cereal:true },
+  pea:     { name:'Field pea',             short:'pea',     D:260, need:80,  soil:85, income:55, heat:true,  cereal:false },
+  oat:     { name:'Fodder oat (hay)',      short:'oat hay', D:280, need:70,  soil:55, income:55, heat:false, cereal:false },
+  rape:    { name:'Rapeseed',              short:'rapeseed',D:330, need:95,  soil:50, income:75, heat:true,  cereal:false },
+  potato:  { name:'Potato',                short:'potato',  D:380, need:100, soil:20, income:95, heat:true,  cereal:false },
+  fallow:  { name:'Clean fallow',          short:'fallow',  fallow:true, carry:60, soil:10, income:0 },
+  nofallow:{ name:'No-till stubble fallow',short:'stub. fallow', fallow:true, carry:80, soil:45, income:0 }
+};
+/* Year templates: P = inherits last year's Dec state; B bare; S stubble/residue; C active canopy */
+const TPL = {
+  wheat:   ['P','P','P','P','B','C','C','C','S','S','S','S'],
+  barley:  ['P','P','P','P','B','C','C','C','S','S','S','S'],
+  pea:     ['P','P','P','P','B','C','C','S','S','S','S','S'],
+  oat:     ['P','P','P','P','P','B','C','C','C','S','S','S'],
+  rape:    ['P','P','P','P','B','C','C','C','S','S','S','S'],
+  potato:  ['P','P','P','P','B','B','C','C','B','B','B','B'],
+  fallow:  ['P','P','P','P','B','B','B','B','B','B','B','B'],
+  nofallow:['P','P','P','P','S','S','S','S','S','S','S','S']
+};
+
+const ROTS = [
+  { id:'base', name:'Wheat → wheat → clean fallow', seq:'Current baseline · 3-year cycle', years:['wheat','wheat','fallow'],
+    why:['This is the common wheat-belt practice and the reference point for every other card.','Clean fallow stores soil moisture and controls weeds before the next wheat crop.'],
+    benefits:['Familiar equipment, seed and grain markets.','Fallow stores moisture for the wheat that follows, which helps in dry years.','Simple weed control through cultivation.'],
+    unknowns:['How much moisture fallow actually stores on this farm\'s soil (no SMAP data ingested).','How much topsoil is lost to wind during bare springs on this field.'] },
+  { id:'pea', name:'Wheat → field pea → wheat', seq:'Legume break · 3-year cycle', years:['wheat','pea','wheat'],
+    why:['Pea fixes nitrogen from the air, adding soil nitrogen for the next wheat crop.','It replaces the bare fallow year with a living crop, breaking cereal disease cycles.'],
+    benefits:['Adds nitrogen, so the following wheat may need less fertilizer.','Breaks wheat root-disease and weed cycles.','A crop to sell in the year that would otherwise earn nothing.'],
+    unknowns:['Whether there is a reliable local buyer for peas.','Pea residue is light: check how well it protects soil in spring.','Pea is sensitive to heat during flowering in July.'] },
+  { id:'barley', name:'Wheat → barley → wheat', seq:'Cereal with retained stubble · 3-year cycle', years:['wheat','barley','wheat'],
+    why:['Barley matures earlier than wheat and leaves standing stubble through winter and the windy spring.','It keeps a cereal system farmers already know while removing the bare fallow year.'],
+    benefits:['Stubble every winter and spring traps snow and protects against wind erosion.','Barley is earlier maturing, which helps where the frost-free season is short.','Uses the same seeding and harvest equipment as wheat.'],
+    unknowns:['Cereal after cereal can build up root diseases and grassy weeds.','Barley demand (feed, malting) in the local market.','More fertilizer may be needed without a fallow or legume year.'] },
+  { id:'oat', name:'Wheat → fodder oat (hay) → wheat', seq:'Forage break · 3-year cycle', years:['wheat','oat','wheat'],
+    why:['Fodder oat is cut for hay in August, so it needs the shortest frost-free window.','Herders need winter fodder, so it can link crop farms with livestock.'],
+    benefits:['Short season: lower frost risk than grain crops.','Hay for winter livestock feed or sale to herders.','Stubble and regrowth cover the soil into winter.'],
+    unknowns:['Hay price and demand vary from year to year and by distance to herders.','Removing hay takes nutrients off the field.','Late sowing (June) leaves soil bare for a few weeks in early summer.'] },
+  { id:'rape', name:'Wheat → rapeseed → wheat', seq:'Oilseed break · 3-year cycle', years:['wheat','rape','wheat'],
+    why:['Rapeseed is a non-cereal break crop with a deep taproot.','It is the main expanding cash crop in the wheat belt.'],
+    benefits:['Breaks cereal disease cycles.','Taproot can open up compacted soil.','Higher relative market value than cereals.'],
+    unknowns:['Needs a longer frost-free season and is sensitive to heat at flowering.','High water demand in dry summers.','Pests (flea beetles) and seed costs need local advice.'] },
+  { id:'potato', name:'Wheat → potato → wheat', seq:'Vegetable break · 3-year cycle', years:['wheat','potato','wheat'],
+    why:['Potato has the highest relative market value of these crops.','It suits farms with irrigation and a nearby market.'],
+    benefits:['Highest income index of all options.','Breaks cereal disease cycles.','Strong local demand in towns.'],
+    unknowns:['Very high water demand: realistic mainly with irrigation.','Digging at harvest leaves soil bare and loose through winter and spring.','Frost-sensitive at both ends of the season; storage and labour costs.'] },
+  { id:'nofallow', name:'Wheat → wheat → no-till stubble fallow', seq:'Fallow with standing stubble · 3-year cycle', years:['wheat','wheat','nofallow'],
+    why:['Keeps the fallow year (moisture storage) but leaves stubble standing instead of cultivating.','Weeds are controlled without tillage, so the soil is never left bare.'],
+    benefits:['Stores more moisture than clean fallow (stubble traps snow, less evaporation).','Soil covered year-round: much lower wind-erosion risk.','Builds organic matter over time.'],
+    unknowns:['Needs a no-till seeder and herbicide weed control; cost and access vary.','Weed resistance and herbicide rules need local advice.','Still no crop income in the fallow year.'] }
+];
+
+const SOILS = {
+  sandy: { name:'Sandy',       carry:0.6, hold:-20, erode:1.3 },
+  loam:  { name:'Loamy',       carry:1.0, hold:0,   erode:1.0 },
+  clay:  { name:'Heavy / clay',carry:1.2, hold:10,  erode:0.85 }
+};
+const IRRIGATION_MM = 150;
+/* What each plan needs from the farm (beyond normal wheat equipment) */
+const NEEDS = { nofallow:['seeder'], pea:['buy_pea'], rape:['buy_rape'], oat:['buy_oat'], potato:['buy_potato'] };
+const NEED_TEXT = { seeder:'needs a no-till seeder', buy_pea:'no buyer for peas', buy_rape:'no buyer for rapeseed', buy_oat:'no buyer for hay', buy_potato:'no buyer for potatoes' };
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const PRI = [
+  { k:'water', label:'Save water' }, { k:'soil', label:'Build soil/nitrogen' },
+  { k:'cover', label:'Cut erosion/spring cover' }, { k:'income', label:'Earn income' }
+];
+const METRICS = [
+  { k:'water', label:'Water fit' }, { k:'frost', label:'Frost margin' }, { k:'soil', label:'Soil / nitrogen' },
+  { k:'cover', label:'Spring cover' }, { k:'income', label:'Income index' }
+];
+const COMMON_UNKNOWNS = [
+  'NASA POWER cells are ~55 × 40 km, so field-level differences (slope, soil type, hollows) are invisible here.',
+  'Climate values are provisional until the NASA POWER download is run.',
+  'No yield or price forecast is made. Check markets, inputs and equipment locally.'
+];
+
+const clamp = (x,a=0,b=100) => Math.max(a, Math.min(b, x));
+const winterMonth = m => m >= 9 || m <= 4;   // Oct–May
+
+function buildCal(years){
+  const cal = years.map(y => TPL[y].slice());
+  for (let pass=0; pass<2; pass++){
+    for (let i=0;i<3;i++){
+      const prev = cal[(i+2)%3];
+      for (let m=0;m<12;m++) if (TPL[years[i]][m]==='P') cal[i][m] = prev[11]==='P' ? 'S' : prev[11];
+    }
+  }
+  return cal;
+}
+
+function desk(){
+  return {
+    LOC, CROPS, ROTS, MONTHS, PRI, METRICS, COMMON_UNKNOWNS,
+    tab:'desk', loc:'darkhan', drier:false, hotter:false, sel:null,
+    w:{ water:3, soil:3, cover:3, income:3 },
+    soilType:'loam', irrig:false, seeder:true, buyers:{ pea:true, rape:true, oat:true, potato:true },
+
+    get L(){ return this.LOC[this.loc]; },
+    rain(d=this.drier){ return d ? this.L.dryRain : this.L.summerRain; },
+    ffd(h=this.hotter){ return this.L.ffd - (h ? 12 : 0); },
+    julyT(h=this.hotter){ return this.L.julyT + (h ? 1.5 : 0); },
+
+    scoreRot(r, d=this.drier, h=this.hotter){
+      const R = this.rain(d), F = this.ffd(h), T = this.julyT(h);
+      const cal = buildCal(r.years);
+      const water=[], frost=[]; let soil=0, income=0;
+      r.years.forEach((y,i) => {
+        const c = CROPS[y], p = CROPS[r.years[(i+2)%3]];
+        let s = c.soil; if (c.cereal && p.cereal) s -= 10;
+        soil += s; income += c.income;
+        if (c.fallow){ water.push(85); return; }
+        const sf = SOILS[this.soilType];
+        const carry = (p.fallow ? p.carry : (r.years[(i+2)%3]==='pea' ? 15 : 0)) * sf.carry;
+        const supply = R + carry + sf.hold + (this.irrig ? IRRIGATION_MM : 0);
+        water.push(clamp(100*(supply/c.D - 0.45)/0.55));
+        frost.push(clamp(40 + 2*(F - c.need)) - (c.heat ? 12*Math.max(0, T-18.5) : 0));
+      });
+      let wb = 0, bareWin = 0;
+      cal.forEach(yr => yr.forEach((st,m) => { if (st==='B' && winterMonth(m)){ bareWin++; wb += (m===3||m===4) ? 2 : 1; } }));
+      const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
+      const s = {
+        water: mean(water),
+        frost: clamp(0.5*Math.min(...frost) + 0.5*mean(frost)),
+        soil: clamp(soil/3), cover: clamp(100*(1 - wb*SOILS[this.soilType].erode/30)), income: clamp(income/3)
+      };
+      const wt = { water: this.w.water*(d?2:1), frost:2, soil:this.w.soil, cover:this.w.cover, income:this.w.income };
+      const sw = Object.values(wt).reduce((a,b)=>a+b,0);
+      s.total = sw ? Object.keys(wt).reduce((a,k)=>a + wt[k]*s[k],0)/sw : 0;
+      return { r, s, cal, bareWin };
+    },
+    ranked(d=this.drier, h=this.hotter){
+      const all = ROTS.map(r => this.scoreRot(r,d,h)).sort((a,b)=>b.s.total-a.s.total);
+      all.forEach((x,i)=> x.rank = i+1);
+      return all;
+    },
+    missing(r){
+      const have = { seeder:this.seeder, buy_pea:this.buyers.pea, buy_rape:this.buyers.rape, buy_oat:this.buyers.oat, buy_potato:this.buyers.potato };
+      return (NEEDS[r.id] || []).filter(n => !have[n]).map(n => NEED_TEXT[n]);
+    },
+    hidden(){ return ROTS.filter(r => r.id!=='base' && this.missing(r).length).map(r => ({ r, why:this.missing(r) })); },
+    shown(){
+      const all = this.ranked();
+      const base = all.find(x=>x.r.id==='base');
+      const alts = all.filter(x=>x.r.id!=='base' && !this.missing(x.r).length).slice(0,2);
+      return [base, ...alts].sort((a,b)=>b.s.total-a.s.total);
+    },
+
+    whyMain(){
+      const [a,b] = this.shown();
+      const diffs = METRICS.map(m => ({ m, d: a.s[m.k]-b.s[m.k] })).sort((x,y)=>y.d-x.d);
+      const plus = diffs.filter(x=>x.d>=3).slice(0,2).map(x=>x.m.label.toLowerCase()+' (+'+Math.round(x.d)+')');
+      const minus = diffs.filter(x=>x.d<=-3).slice(-1).map(x=>x.m.label.toLowerCase()+' ('+Math.round(x.d)+')');
+      let t = 'Compared with ' + b.r.name + ', it is ahead on ' + (plus.length ? plus.join(' and ') : 'a close mix of scores');
+      t += minus.length ? ', trading off ' + minus.join('') + '.' : '.';
+      const gap = a.s.total-b.s.total;
+      return t + (gap < 2 ? ' The two are nearly tied, so small slider changes can reorder the cards.' : ' The gap is ' + Math.round(gap) + ' points' + (gap < 6 ? ', so small slider changes can reorder the cards.' : '.'));
+    },
+    whyNotes(){
+      const n = [], shownIds = this.shown().map(x=>x.r.id), L = this.L;
+      if (this.w.cover >= 3 && (shownIds.includes('barley') || shownIds.includes('oat')))
+        n.push('Barley and fodder oat score well on spring cover: their stubble stands through the windy April–May period (≈'+L.springWind.toFixed(1)+' m/s average wind here), instead of bare soil.');
+      const baseNow = this.ranked().find(x=>x.r.id==='base').rank;
+      if (this.drier){
+        const baseWet = this.ranked(false,this.hotter).find(x=>x.r.id==='base').rank;
+        n.push('Clean fallow '+(baseNow<baseWet ? 'climbs from #'+baseWet+' to #'+baseNow : 'is #'+baseNow)+' of 7 under Drier Year, because stored fallow moisture matters more when rain is only '+L.dryRain+' mm. But its soil stays bare from October to May while spring winds average ≈'+L.springWind.toFixed(1)+' m/s, so erosion risk is high.');
+        const pWet = this.ranked(false,this.hotter).find(x=>x.r.id==='potato'), pNow = this.ranked().find(x=>x.r.id==='potato');
+        n.push('Potato drops under Drier Year ('+Math.round(pWet.s.total)+' → '+Math.round(pNow.s.total)+' points'+(pNow.rank!==pWet.rank ? ', #'+pWet.rank+' → #'+pNow.rank : '')+'): its water-demand index ('+CROPS.potato.D+') is far above dry-year rainfall unless the field is irrigated.');
+      }
+      if (this.hotter)
+        n.push('Hotter / Frost-Squeezed shortens the frost-free window to '+this.ffd()+' days and raises July to '+this.julyT().toFixed(1)+'°C. Rapeseed, potato and pea lose frost & heat margin first.');
+      n.push('This is a comparison aid, not a recommendation. Check it with the farmer and a local agronomist.');
+      return n;
+    },
+
+    cardWhy(it){
+      const base = this.scoreRot(ROTS[0]);
+      const t = it.r.why.slice();
+      if (it.r.id !== 'base'){
+        const up = METRICS.map(m=>({m,d:it.s[m.k]-base.s[m.k]})).filter(x=>x.d>=5).sort((a,b)=>b.d-a.d);
+        if (up.length) t.push('Versus the baseline here: ' + up.map(x=>x.m.label.toLowerCase()+' +'+Math.round(x.d)).join(', ') + '.');
+      }
+      return t;
+    },
+    cardEvidence(it){
+      const L = this.L, R = this.rain(), F = this.ffd();
+      const crops = [...new Set(it.r.years)].map(y=>CROPS[y]).filter(c=>!c.fallow);
+      const ev = [];
+      ev.push('NASA POWER rainfall: '+(this.drier ? 'dry-year (25th percentile) ' : '')+'summer rain ≈'+R+' mm vs water-demand index '+crops.map(c=>c.short+' '+c.D).join(', ')+'.');
+      ev.push('NASA POWER T2M_MIN: frost-free window ≈'+F+' days vs need '+crops.map(c=>c.short+' '+c.need+' d').join(', ')+(this.hotter?' (squeezed by 12 days).':'.'));
+      ev.push('NASA POWER T2M: July mean ≈'+this.julyT().toFixed(1)+'°C'+(crops.some(c=>c.heat) ? '; heat-sensitive crops lose margin above 18.5°C.' : '.'));
+      ev.push('NASA POWER WS2M: spring wind ≈'+L.springWind.toFixed(1)+' m/s (Apr–May); this cycle has '+it.bareWin+' bare Oct–May months (residue calendar stands in for MODIS/Landsat bare-soil data).');
+      ev.push('All values provisional and for a ~55 × 40 km grid cell. Elevation ≈'+L.elev+' m is approximate.');
+      return ev;
+    },
+
+    cellClass(st,m){ return st==='B' ? (winterMonth(m) ? 'BW' : 'BS') : st; },
+    cellColor(st,m){ return { C:'var(--canopy)', S:'var(--stubble)', BS:'var(--bare-sum)', BW:'var(--bare-win)' }[this.cellClass(st,m)]; },
+    stateName(st,m){ return st==='C' ? 'Active canopy' : st==='S' ? 'Stubble / residue' : (winterMonth(m) ? 'Bare ground (Oct–May)' : 'Bare ground (Jun–Sep)'); },
+    isSel(id,y,m){ return this.sel && this.sel.id===id && this.sel.y===y && this.sel.m===m; },
+    explainCell(r,cal,y,m){
+      const key = r.years[y], c = CROPS[key], prevKey = r.years[(y+2)%3], p = CROPS[prevKey];
+      const st = cal[y][m], tpl = TPL[key][m], wind = this.L.springWind.toFixed(1);
+      if (tpl==='P'){
+        if (st==='S') return 'Over winter, '+p.name.toLowerCase()+' residue from last year is still standing. It traps snow and slows wind'+(m>=3?' during the windy spring (≈'+wind+' m/s).':'.');
+        return 'Soil left bare after last year\'s '+p.name.toLowerCase()+(prevKey==='potato'?' harvest (dug soil)':'')+'. Exposed to wind'+(m>=3?', and April–May are the windiest months (≈'+wind+' m/s).':' through winter.');
+      }
+      if (c.fallow){
+        if (key==='nofallow') return 'Stubble rest year: last crop\'s stubble stays standing. Weeds are controlled without tillage, so moisture is stored while the soil stays covered.';
+        return 'Bare rest year: the field is cultivated repeatedly to kill weeds and store moisture, so the soil is bare'+(winterMonth(m)?' into the windy season.':' through summer.');
+      }
+      if (st==='B'){
+        if (key==='potato' && m>=8) return m===8 ? 'Potato harvest: digging disturbs the whole topsoil and leaves it loose and bare.' : 'After the potato dig the loose soil stays bare through winter, the most erosion-prone setup on this desk.';
+        if (key==='potato' && m===5) return 'Potato rows are emerging, so most of the soil is still uncovered.';
+        return 'Seedbed prepared and '+c.name.toLowerCase()+' sown. Soil is mostly bare until the crop grows.';
+      }
+      if (st==='C') return c.name+' is growing: roots hold the soil and the crop is using water.'+(m===6 && c.heat ? ' July heat matters here: this crop is heat-sensitive.' : '');
+      return c.name+' harvested'+(key==='oat'?' for hay; regrowth and stubble':'; stubble')+' is left standing to trap snow and protect soil until next season.';
+    }
+  };
+}
+
+
+const PLAIN = {
+  base:     { name:'Wheat, wheat, then a bare rest year', sum:'The usual plan in the wheat belt. The rest year saves water, but the soil sits bare and can blow away in spring.' },
+  pea:      { name:'Wheat, peas, wheat', sum:'Peas feed the soil with nitrogen and replace the bare rest year with a crop you can sell.' },
+  barley:   { name:'Wheat, barley, wheat', sum:'Barley ripens early and leaves stubble that protects the soil through the windy spring.' },
+  oat:      { name:'Wheat, oats for hay, wheat', sum:'Oats are cut for hay in August. They need the shortest season and give winter feed for livestock.' },
+  rape:     { name:'Wheat, rapeseed, wheat', sum:'Rapeseed is a cash crop that breaks wheat diseases, but needs a longer season and more water.' },
+  potato:   { name:'Wheat, potatoes, wheat', sum:'Potatoes can earn the most, but need a lot of water and leave the soil loose after digging.' },
+  nofallow: { name:'Wheat, wheat, then a rest year with stubble left standing', sum:'Keeps the rest year to save water, but leaves the old stubble standing so the soil stays covered.' }
+};
+const CROPWORD = { wheat:'wheat', barley:'barley', pea:'peas', oat:'oat hay', rape:'rapeseed', potato:'potatoes', fallow:'bare rest', nofallow:'stubble rest' };
+const GOALS = [
+  { k:'water', label:'Use less water' }, { k:'soil', label:'Make the soil richer' },
+  { k:'cover', label:'Stop soil blowing away' }, { k:'income', label:'Earn more money' }
+];
+const LEVELS = [ { v:0, t:'Low' }, { v:3, t:'Medium' }, { v:5, t:'High' } ];
+const YEARS = [
+  { k:'normal', t:'A normal year', d:'Typical rain and frost' },
+  { k:'dry', t:'A dry year', d:'Rain like the driest 1 in 4 summers' },
+  { k:'hot', t:'A short, hot season', d:'12 fewer days without frost, hotter July' },
+  { k:'both', t:'Dry and hot', d:'Both problems at once' }
+];
+const RATE = [
+  { k:'water', t:'Water' }, { k:'frost', t:'Frost & heat safety' }, { k:'soil', t:'Soil health' },
+  { k:'cover', t:'Ground cover' }, { k:'income', t:'Income' }
+];
+const BUYERS = [ { k:'pea', t:'Peas' }, { k:'rape', t:'Rapeseed' }, { k:'oat', t:'Hay' }, { k:'potato', t:'Potatoes' } ];
+const PLAIN_UNKNOWNS = [
+  'Our weather numbers cover an area of about 55 × 40 km, so they cannot see your slopes, soil type or low spots.',
+  'We do not predict harvests or prices. Check seed, equipment and buyers locally.'
+];
+
+
+/* ---------- automatic NASA data ---------- */
+const POWER_URL = 'https://power.larc.nasa.gov/api/temporal/daily/point';
+function summarizePower(p, start, end){
+  const ok = v => v != null && v > -900;
+  const rain=[], ffd=[], jt=[], wind=[];
+  for (let y=start; y<=end; y++){
+    const days = Object.keys(p.T2M_MIN).filter(k => k.startsWith(String(y))).sort();
+    const jja = days.filter(d => ['06','07','08'].includes(d.slice(4,6))).map(d => p.PRECTOTCORR[d]);
+    if (jja.length >= 90 && jja.every(ok)) rain.push(jja.reduce((a,b)=>a+b,0));
+    const tmin = days.filter(d => ok(p.T2M_MIN[d])).map(d => [d, p.T2M_MIN[d]]);
+    let lastSpring=-1, firstAutumn=-1;
+    tmin.forEach(([d,v],i) => { if (v<=0 && d.slice(4)<'0701') lastSpring=i; if (v<=0 && d.slice(4)>='0701' && firstAutumn<0) firstAutumn=i; });
+    if (lastSpring>=0 && firstAutumn>=0) ffd.push(firstAutumn-lastSpring-1);
+    const jul = days.filter(d => d.slice(4,6)==='07' && ok(p.T2M[d])).map(d => p.T2M[d]);
+    if (jul.length) jt.push(jul.reduce((a,b)=>a+b,0)/jul.length);
+    const am = days.filter(d => ['04','05'].includes(d.slice(4,6)) && ok(p.WS2M[d])).map(d => p.WS2M[d]);
+    if (am.length) wind.push(am.reduce((a,b)=>a+b,0)/am.length);
+  }
+  const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
+  const s = rain.slice().sort((a,b)=>a-b);
+  const m = s.length + 1, j = Math.floor(m/4), dl = m - j*4;   // same as Python statistics.quantiles(n=4)[0]
+  const q25 = (s[j-1]*(4-dl) + s[j]*dl) / 4;
+  return { summerRain:Math.round(mean(rain)), dryRain:Math.round(q25), ffd:Math.round(mean(ffd)),
+    julyT:Math.round(mean(jt)*10)/10, springWind:Math.round(mean(wind)*10)/10,
+    rainMin:Math.round(Math.min(...rain)), rainMax:Math.round(Math.max(...rain)), ffdMin:Math.min(...ffd), ffdMax:Math.max(...ffd) };
+}
+function kmBetween(a,b,c,d){ const r=Math.PI/180, x=(d-b)*r*Math.cos((a+c)/2*r), y=(c-a)*r; return Math.round(6371*Math.sqrt(x*x+y*y)); }
+
+function friendly(){
+  const d = desk();
+  const extra = {
+
+    dataStatus:'loading', meta:{ updated:null, start:2001, end:2025 }, locBusy:false, locMsg:'',
+    async boot(){
+      try {
+        const r = await fetch('data/climate.json', { cache:'no-store' });
+        if (!r.ok) throw new Error('no file');
+        const j = await r.json();
+        Object.entries(j.locations).forEach(([k,v]) => { this.LOC[k] = Object.assign({}, this.LOC[k] || {}, v); });
+        this.meta = { updated:j.updated, start:j.period.start, end:j.period.end };
+        if (!this.LOC[this.loc]) this.loc = Object.keys(this.LOC)[0];
+        this.dataStatus = 'live';
+      } catch(e){ this.dataStatus = 'saved'; }
+    },
+    niceDate(s){ if (!s) return 'unknown'; const d = new Date(s); return d.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }); },
+    dataLine(){
+      if (this.dataStatus==='loading') return 'Loading NASA weather data…';
+      if (this.dataStatus==='live') return 'NASA weather data, updated ' + this.niceDate(this.meta.updated);
+      return 'Saved NASA weather data from 14 November 2026';
+    },
+    nearest(lat,lon){
+      let best=null;
+      Object.entries(this.LOC).forEach(([k,l]) => { if (k==='mine') return; const km = kmBetween(lat,lon,l.lat,l.lon); if (!best || km<best.km) best={k,km}; });
+      return best;
+    },
+    useMyLocation(){
+      if (!navigator.geolocation){ this.locMsg = 'Your browser cannot share your location. Please pick the closest area.'; return; }
+      this.locBusy = true; this.locMsg = '';
+      navigator.geolocation.getCurrentPosition(async pos => {
+        const lat = Math.round(pos.coords.latitude*100)/100, lon = Math.round(pos.coords.longitude*100)/100;
+        const near = this.nearest(lat,lon);
+        this.locMsg = 'Getting 25 years of NASA weather for your farm. This can take up to a minute…';
+        const end = new Date().getFullYear()-1;
+        try {
+          const url = POWER_URL + '?parameters=PRECTOTCORR,T2M,T2M_MIN,WS2M&community=AG&latitude=' + lat + '&longitude=' + lon + '&start=2001' + '0101&end=' + end + '1231&format=JSON';
+          const r = await fetch(url);
+          if (!r.ok) throw new Error('NASA ' + r.status);
+          const j = await r.json();
+          const s = summarizePower(j.properties.parameter, 2001, end);
+          this.LOC.mine = Object.assign({ name:'Your farm', aimag:'From your location', lat, lon, elev:Math.round(j.geometry.coordinates[2]), live:true }, s);
+          this.loc = 'mine'; this.sel = null;
+          this.locMsg = 'Using NASA weather for your exact location (' + lat.toFixed(2) + '°N, ' + lon.toFixed(2) + '°E).';
+        } catch(e){
+          if (near){ this.loc = near.k; this.sel = null;
+            this.locMsg = 'Could not reach NASA directly, so we picked the nearest area: ' + this.LOC[near.k].name + ', about ' + near.km + ' km away.'; }
+          else this.locMsg = 'Could not reach NASA. Please pick the closest area.';
+        }
+        this.locBusy = false;
+      }, () => { this.locBusy = false; this.locMsg = 'Location was not shared. Please pick the closest area.'; }, { timeout:15000 });
+    },
+    PLAIN, CROPWORD, GOALS, LEVELS, YEARS, RATE, PLAIN_UNKNOWNS, SOILS, BUYERS,
+    yearType(){ return this.drier && this.hotter ? 'both' : this.drier ? 'dry' : this.hotter ? 'hot' : 'normal'; },
+    setYear(k){ this.drier = (k==='dry'||k==='both'); this.hotter = (k==='hot'||k==='both'); },
+    word(v){ return v >= 70 ? 'Good' : v >= 45 ? 'Fair' : 'Weak'; },
+    dots(v){ return Math.max(1, Math.round(v/20)); },
+    matchWord(v){ return v >= 60 ? 'Strong match' : v >= 45 ? 'Fair match' : 'Weak match'; },
+    plainState(st,m){ return st==='C' ? 'crop growing' : st==='S' ? 'stubble left standing' : (winterMonth(m) ? 'bare soil in the windy season' : 'bare soil in summer'); },
+
+    plainWhy(){
+      const [a,b] = this.shown();
+      const names = { water:'water', frost:'frost and heat safety', soil:'soil health', cover:'ground cover', income:'income' };
+      const diffs = METRICS.map(m=>({k:m.k, d:a.s[m.k]-b.s[m.k]})).sort((x,y)=>y.d-x.d);
+      const up = diffs.filter(x=>x.d>=3).slice(0,2).map(x=>names[x.k]);
+      const down = diffs.filter(x=>x.d<=-3).slice(-1).map(x=>names[x.k]);
+      let t = '"' + PLAIN[a.r.id].name + '" comes first for your answers';
+      t += up.length ? ' because it does better on ' + up.join(' and ') : '';
+      t += down.length ? ', though it is weaker on ' + down[0] + '.' : '.';
+      const gap = a.s.total - b.s.total;
+      if (gap < 4) t += ' The top plans are very close, so a small change in your answers can swap them.';
+      return t;
+    },
+    plainNotes(){
+      const n = [], ids = this.shown().map(x=>x.r.id), L = this.L;
+      if (this.w.cover >= 3 && (ids.includes('barley') || ids.includes('oat')))
+        n.push('Barley and oats keep stubble on the field through April and May, when the wind is strongest here.');
+      if (this.drier){
+        const wet = this.ranked(false,this.hotter).find(x=>x.r.id==='base').rank, now = this.ranked().find(x=>x.r.id==='base').rank;
+        if (now < wet) n.push('In a dry year the usual bare rest year moves up the list, because the water it saves matters more. But the bare soil can blow away in spring winds.');
+        else n.push('In a dry year, plans that save water become more important. A bare rest year saves water but leaves soil open to spring winds.');
+        n.push(this.irrig ? 'You said you can water this field, so potatoes are not marked down for dry-year rain.' : 'Potatoes drop in a dry year. They need much more water than falls here unless the field is watered.');
+      }
+      if (this.hotter) n.push('In a short, hot season, rapeseed, potatoes and peas are the most at risk from early frost and July heat.');
+      return n;
+    },
+    plainEvidence(it){
+      const L = this.L, crops = [...new Set(it.r.years)].map(y=>CROPS[y]).filter(c=>!c.fallow);
+      const ev = [];
+      ev.push((this.drier ? 'In a dry summer' : 'In a normal summer') + ' this area gets about ' + this.rain() + ' mm of rain from June to August.');
+      ev.push('There are about ' + this.ffd() + ' days between the last spring frost and the first autumn frost' + (this.hotter ? ' in a short season.' : '.') + ' ' + crops.map(c => CROPWORD[Object.keys(CROPS).find(k=>CROPS[k]===c)] + ' needs about ' + c.need).join(', ') + '.');
+      ev.push('July averages about ' + this.julyT().toFixed(1) + '°C.' + (crops.some(c=>c.heat) ? ' Some crops in this plan suffer when July is hot.' : ''));
+      ev.push('Spring wind averages about ' + L.springWind.toFixed(1) + ' m/s in April and May. This plan leaves the soil bare in ' + it.bareWin + ' windy-season months over 3 years.');
+      if (L.rainMin != null) ev.push('From ' + this.meta.start + ' to ' + this.meta.end + ', summer rain ranged from ' + L.rainMin + ' to ' + L.rainMax + ' mm and days without frost from ' + L.ffdMin + ' to ' + L.ffdMax + '.');
+      if (this.irrig) ev.push('You can water this field, so we add about ' + IRRIGATION_MM + ' mm to the rain each crop year.');
+      const keys = [...new Set(it.r.years)].filter(y => !CROPS[y].fallow);
+      const g = L.gaez || {};
+      const checked = keys.filter(k => g[k]);
+      ev.push(checked.length ? 'FAO GAEZ crop suitability: ' + checked.map(k => CROPWORD[k] + ' ' + g[k]).join(', ') + '.' : 'FAO GAEZ crop suitability: not checked yet for this area.');
+      ev.push(this.dataStatus==='live' || L.live ? 'Source: NASA POWER daily data, ' + this.meta.start + '–' + this.meta.end + ', for an area of about 55 × 40 km.' : 'Source: NASA POWER daily data, 2001–2025, saved 14 November 2026, for an area of about 55 × 40 km.');
+      return ev;
+    },
+    cardWhy(it){
+      const t = it.r.why.slice();
+      if (it.r.id !== 'base'){
+        const base = this.scoreRot(ROTS[0]);
+        const names = { water:'water', frost:'frost and heat safety', soil:'soil health', cover:'ground cover', income:'income' };
+        const up = METRICS.map(m=>({k:m.k,d:it.s[m.k]-base.s[m.k]})).filter(x=>x.d>=5).map(x=>names[x.k]);
+        if (up.length) t.push('Compared with the usual plan, it does better on ' + up.join(', ') + '.');
+      }
+      return t;
+    }
+  };
+  Object.defineProperties(d, Object.getOwnPropertyDescriptors(extra));
+  return d;
+}
+</script>
+<script>(()=>{var bt=!1,Et=!1,B=[],vt=-1,Fe=!1,wt=!1;function gr(e){ai(e)}function xr(){wt=!0}function yr(){wt=!1,br()}function ai(e){B.includes(e)||(B.push(e),e._x_schedulerPriority!==void 0&&(Fe=!0)),br()}function ue(e){let t=B.indexOf(e);t!==-1&&t>vt&&B.splice(t,1)}function br(){if(!Et&&!bt){if(wt)return;bt=!0,queueMicrotask(ci)}}function ci(){bt=!1,Et=!0;for(let e=0;e<B.length;e++)Fe&&li(e),B[e](),vt=e;B.length=0,vt=-1,Fe=!1,Et=!1}function li(e){let t=new Map,r=B.slice(e).sort((n,i)=>fi(n,i,t));for(let n=0;n<r.length;n++)B[e+n]=r[n];Fe=!1}function fi(e,t,r){return yt(e)?yt(t)?_r(e._x_schedulerPriority.el,r)-_r(t._x_schedulerPriority.el,r)||e._x_schedulerPriority.order-t._x_schedulerPriority.order:-1:yt(t)?1:0}function yt(e){return e._x_schedulerPriority!==void 0}function _r(e,t){if(t.has(e))return t.get(e);let r=0,n=e;for(;e;)r++,e._x_teleportBack?e=e._x_teleportBack:typeof ShadowRoot=="function"&&e.parentNode instanceof ShadowRoot?e=e.parentNode.host:e=e.parentElement;return t.set(n,r),r}var D,P,H,At,ui=0,St=!0;function Er(e){St=!1,e(),St=!0}function vr(e){D=e.reactive,H=e.release,P=t=>e.effect(t,{scheduler:r=>{St?gr(r):r()}}),At=e.raw}function Tt(e){P=e}function wr(e){let t=()=>{};return[(n,i)=>{let o=i?.priority==="structural"?ui++:void 0,s=P(n);return o!==void 0&&s!==void 0&&(s._x_schedulerPriority={el:e,order:o}),e._x_effects||(e._x_effects=new Set,e._x_runEffects=()=>{e._x_effects.forEach(a=>a())}),e._x_effects.add(s),t=()=>{s!==void 0&&(e._x_effects.delete(s),H(s))},s},()=>{t()}]}function Ve(e,t){let r=!0,n,i,o=P(()=>{let s=e(),a=JSON.stringify(s);if(!r&&(typeof s=="object"||s!==n)){let c=typeof n=="object"?JSON.parse(i):n;queueMicrotask(()=>{t(s,c)})}n=s,i=a,r=!1});return()=>{ue(o),H(o)}}async function Sr(e){xr();try{await e(),await Promise.resolve()}finally{yr()}}var Ar=[],Tr=[],Or=[];function Nr(e){Or.push(e)}function de(e,t){typeof t=="function"?(e._x_cleanups||(e._x_cleanups=[]),e._x_cleanups.push(t)):(t=e,Tr.push(t))}function Be(e){Ar.push(e)}function He(e,t,r){e._x_attributeCleanups||(e._x_attributeCleanups={}),e._x_attributeCleanups[t]||(e._x_attributeCleanups[t]=[]),e._x_attributeCleanups[t].push(r)}function Ot(e,t){e._x_attributeCleanups&&Object.entries(e._x_attributeCleanups).forEach(([r,n])=>{(t===void 0||t.includes(r))&&(n.forEach(i=>i()),delete e._x_attributeCleanups[r])})}function Cr(e){for(e._x_effects?.forEach(ue);e._x_cleanups?.length;)e._x_cleanups.pop()()}var Ue=new MutationObserver(qe),Nt=!1;function we(){Ue.observe(document,{subtree:!0,childList:!0,attributes:!0,attributeOldValue:!0}),Nt=!0}function Ct(){di(),Ue.disconnect(),Nt=!1}var Z=[];function di(){let e=Ue.takeRecords();Z.push(()=>e.length>0&&qe(e));let t=Z.length;queueMicrotask(()=>{if(Z.length===t)for(;Z.length>0;)Z.shift()()})}function Rr(){for(;Z.length>0;)Z.shift()();let e=Ue.takeRecords();e.length>0&&qe(e)}function h(e){if(!Nt)return e();Ct();try{return e()}finally{we()}}var Rt=!1,$e=[];function Dr(){Rt=!0}function Mr(){Rt=!1,qe($e),$e=[]}function qe(e){if(Rt){$e=$e.concat(e);return}let t=[],r=new Set,n=new Map,i=new Map;for(let o=0;o<e.length;o++)if(!e[o].target._x_ignoreMutationObserver&&(e[o].type==="childList"&&(e[o].removedNodes.forEach(s=>{s.nodeType===1&&s._x_marker&&r.add(s)}),e[o].addedNodes.forEach(s=>{if(s.nodeType===1){if(r.has(s)){r.delete(s);return}s._x_marker||t.push(s)}})),e[o].type==="attributes")){let s=e[o].target,a=e[o].attributeName,c=e[o].oldValue,l=()=>{n.has(s)||n.set(s,[]),n.get(s).push({name:a,value:s.getAttribute(a)})},f=()=>{i.has(s)||i.set(s,[]),i.get(s).push(a)};s.hasAttribute(a)&&c===null?l():s.hasAttribute(a)?(f(),l()):f()}i.forEach((o,s)=>{Ot(s,o)}),n.forEach((o,s)=>{Ar.forEach(a=>a(s,o))});for(let o of r)t.some(s=>s.contains(o))||Tr.forEach(s=>s(o));for(let o of t)o.isConnected&&Or.forEach(s=>s(o));t=null,r=null,n=null,i=null}function ze(e){return L(U(e))}function I(e,t,r){return e._x_dataStack=[t,...U(r||e)],()=>{e._x_dataStack=e._x_dataStack.filter(n=>n!==t)}}function U(e){return e._x_dataStack?e._x_dataStack:typeof ShadowRoot=="function"&&e instanceof ShadowRoot?U(e.host):e.parentNode?U(e.parentNode):[]}function L(e){return new Proxy({objects:e},pi)}function kr(e,t){return e===null||e===Object.prototype?null:Object.prototype.hasOwnProperty.call(e,t)?e:kr(Object.getPrototypeOf(e),t)}var pi={ownKeys({objects:e}){return Array.from(new Set(e.flatMap(t=>Object.keys(t))))},has({objects:e},t){return t==Symbol.unscopables?!1:e.some(r=>Object.prototype.hasOwnProperty.call(r,t)||Reflect.has(r,t))},get({objects:e},t,r){return t=="toJSON"?hi:Reflect.get(e.find(n=>Reflect.has(n,t))||{},t,r)},set({objects:e},t,r,n){let i;for(let s of e)if(i=kr(s,t),i)break;i||(i=e[e.length-1]);let o=Object.getOwnPropertyDescriptor(i,t);return o?.set&&o?.get?o.set.call(n,r)||!0:Reflect.set(i,t,r)}};function hi(){return Reflect.ownKeys(this).reduce((t,r)=>(t[r]=Reflect.get(this,r),t),{})}function pe(e,t=()=>{}){let r=i=>typeof i=="object"&&!Array.isArray(i)&&i!==null,n=(i,o="")=>{Object.entries(Object.getOwnPropertyDescriptors(i)).forEach(([s,{value:a,enumerable:c}])=>{if(c===!1||a===void 0||typeof a=="object"&&a!==null&&a.__v_skip)return;let l=o===""?s:`${o}.${s}`;typeof a=="object"&&a!==null&&a._x_interceptor?i[s]=a.initialize(e,l,s,t):r(a)&&a!==i&&!(a instanceof Element)&&n(a,l)})};return n(e)}function Ke(e,t=()=>{}){let r={initialValue:void 0,_x_interceptor:!0,initialize(n,i,o,s){return e(this.initialValue,()=>mi(n,i),a=>Dt(n,i,a),i,o,s)}};return t(r),n=>{if(typeof n=="object"&&n!==null&&n._x_interceptor){let i=r.initialize.bind(r);r.initialize=(o,s,a,c)=>{let l=n.initialize(o,s,a,c);return r.initialValue=l,i(o,s,a,c)}}else r.initialValue=n;return r}}function mi(e,t){return t.split(".").reduce((r,n)=>r[n],e)}function Dt(e,t,r){if(typeof t=="string"&&(t=t.split(".")),t.length===1)e[t[0]]=r;else{if(t.length===0)throw error;return e[t[0]]||(e[t[0]]={}),Dt(e[t[0]],t.slice(1),r)}}var Pr={};function b(e,t){Pr[e]=t}function G(e,t){let r=_i(t);return Object.entries(Pr).forEach(([n,i])=>{Object.defineProperty(e,`$${n}`,{get(){return i(t,r)},enumerable:!1})}),e}function _i(e){let[t,r]=Mt(e),n={interceptor:Ke,...t};return de(e,r),n}function Ir(e,t,r,...n){try{return r(...n)}catch(i){Y(i,e,t)}}function Y(...e){return Lr(...e)}var Lr=gi;function jr(e){Lr=e}function gi(e,t,r=void 0){e=Object.assign(e??{message:"No error message given."},{el:t,expression:r}),console.warn(`Alpine Expression Error: ${e.message}
+
+${r?'Expression: "'+r+`"
+
+`:""}`,t),setTimeout(()=>{throw e},0)}var he=!0;function We(e){let t=he;he=!1;let r=e();return he=t,r}function M(e,t,r={}){let n;return x(e,t)(i=>n=i,r),n}function x(...e){return Fr(...e)}var Fr=()=>{};function Vr(e){Fr=e}var $r;function Br(e){$r=e}function Hr(e,t){let r={};G(r,e);let n=[r,...U(e)],i=typeof t=="function"?xi(n,t):bi(n,t,e);return Ir.bind(null,e,t,i)}function xi(e,t){return(r=()=>{},{scope:n={},params:i=[],context:o}={})=>{if(!he){Se(r,t,L([n,...e]),i);return}let s=t.apply(L([n,...e]),i);Se(r,s)}}var kt={};function yi(e,t){if(kt[e])return kt[e];let r=Object.getPrototypeOf(async function(){}).constructor,n=/^[\n\s]*if.*\(.*\)/.test(e.trim())||/^(let|const)\s/.test(e.trim())?`(async()=>{ ${e} })()`:e,o=(()=>{try{let s=new r(["__self","scope"],`with (scope) { __self.result = ${n} }; __self.finished = true; return __self.result;`);return Object.defineProperty(s,"name",{value:`[Alpine] ${e}`}),s}catch(s){return Y(s,t,e),Promise.resolve()}})();return kt[e]=o,o}function bi(e,t,r){let n=yi(t,r);return(i=()=>{},{scope:o={},params:s=[],context:a}={})=>{n.result=void 0,n.finished=!1;let c=L([o,...e]);if(typeof n=="function"){let l=n.call(a,n,c).catch(f=>Y(f,r,t));n.finished?(Se(i,n.result,c,s,r),n.result=void 0):l.then(f=>{Se(i,f,c,s,r)}).catch(f=>Y(f,r,t)).finally(()=>n.result=void 0)}}}function Se(e,t,r,n,i){if(he&&typeof t=="function"){let o=t.apply(r,n);o instanceof Promise?o.then(s=>Se(e,s,r,n)).catch(s=>Y(s,i,t)):e(o)}else typeof t=="object"&&t instanceof Promise?t.then(o=>e(o)):e(t)}function Ur(...e){return $r(...e)}function qr(e,t,r={}){let n={};G(n,e);let i=[n,...U(e)],o=L([r.scope??{},...i]),s=r.params??[];if(t.includes("await")){let a=Object.getPrototypeOf(async function(){}).constructor,c=/^[\n\s]*if.*\(.*\)/.test(t.trim())||/^(let|const)\s/.test(t.trim())?`(async()=>{ ${t} })()`:t;return new a(["scope"],`with (scope) { let __result = ${c}; return __result }`).call(r.context,o)}else{let a=/^[\n\s]*if.*\(.*\)/.test(t.trim())||/^(let|const)\s/.test(t.trim())?`(()=>{ ${t} })()`:t,l=new Function(["scope"],`with (scope) { let __result = ${a}; return __result }`).call(r.context,o);return typeof l=="function"&&he?l.apply(o,s):l}}var Lt="x-";function N(e=""){return Lt+e}function zr(e){Lt=e}var Ge={};function p(e,t){return Ge[e]=t,{before(r){if(!Ge[r]){console.warn(String.raw`Cannot find directive \`${r}\`. \`${e}\` will use the default order of execution`);return}let n=Q.indexOf(r);Q.splice(n>=0?n:Q.indexOf("DEFAULT"),0,e)}}}function Kr(e){return Object.keys(Ge).includes(e)}function ee(e,t,r){if(t=Array.from(t),e._x_virtualDirectives){let o=Object.entries(e._x_virtualDirectives).map(([a,c])=>({name:a,value:c})),s=jt(o);o=o.map(a=>s.find(c=>c.name===a.name)?{name:`x-bind:${a.name}`,value:`"${a.value}"`}:a),t=t.concat(o)}let n={};return t.map(Yr((o,s)=>n[o]=s)).filter(Xr).map(vi(n,r)).sort(wi).map(o=>Ei(e,o))}function jt(e){return Array.from(e).map(Yr()).filter(t=>!Xr(t))}var Pt=!1,Ae=new Map,Wr=Symbol();function Gr(e){Pt=!0;let t=Symbol();Wr=t,Ae.set(t,[]);let r=()=>{for(;Ae.get(t).length;)Ae.get(t).shift()();Ae.delete(t)},n=()=>{Pt=!1,r()};e(r),n()}function Mt(e){let t=[],r=a=>t.push(a),[n,i]=wr(e);return t.push(i),[{Alpine:q,effect:n,cleanup:r,evaluateLater:x.bind(x,e),evaluate:M.bind(M,e)},()=>t.forEach(a=>a())]}function Ei(e,t){let r=()=>{},n=Ge[t.type]||r,[i,o]=Mt(e);He(e,t.original,o);let s=()=>{e._x_ignore||e._x_ignoreSelf||(n.inline&&n.inline(e,t,i),n=n.bind(n,e,t,i),Pt?Ae.get(Wr).push(n):n())};return s.runCleanups=o,s}var Ye=(e,t)=>({name:r,value:n})=>(r.startsWith(e)&&(r=r.replace(e,t)),{name:r,value:n}),Je=e=>e;function Yr(e=()=>{}){return({name:t,value:r})=>{let{name:n,value:i}=Jr.reduce((o,s)=>s(o),{name:t,value:r});return n!==t&&e(n,t),{name:n,value:i}}}var Jr=[];function me(e){Jr.push(e)}function Xr({name:e}){return Zr().test(e)}var Zr=()=>new RegExp(`^${Lt}([^:^.]+)\\b`);function vi(e,t){return({name:r,value:n})=>{r===n&&(n="");let i=r.match(Zr()),o=r.match(/:([a-zA-Z0-9\-_:]+)/),s=r.match(/\.[^.\]]+(?=[^\]]*$)/g)||[],a=t||e[r]||r;return{type:i?i[1]:null,value:o?o[1]:null,modifiers:s.map(c=>c.replace(".","")),expression:n,original:a}}}var It="DEFAULT",Q=["ignore","ref","id","data","anchor","bind","init","for","model","modelable","transition","show","if",It,"teleport"];function wi(e,t){let r=Q.indexOf(e.type)===-1?It:e.type,n=Q.indexOf(t.type)===-1?It:t.type;return Q.indexOf(r)-Q.indexOf(n)}function j(e,t){if(typeof ShadowRoot=="function"&&e instanceof ShadowRoot){Array.from(e.children).forEach(i=>j(i,t));return}let r=!1;if(t(e,()=>r=!0),r)return;let n=e.firstElementChild;for(;n;)j(n,t,!1),n=n.nextElementSibling}var C=!1;function w(e,t=()=>{}){return(...r)=>C?t(...r):e(...r)}function Qr(e){return(...t)=>C&&e(...t)}var en=[];function F(e){en.push(e)}function tn(e,t){en.forEach(r=>r(e,t)),C=!0,nn(()=>{S(t,(r,n)=>{n(r,()=>{})})}),C=!1}var Xe=!1;function rn(e,t){t._x_dataStack||(t._x_dataStack=e._x_dataStack),C=!0,Xe=!0,nn(()=>{Si(t)}),C=!1,Xe=!1}function Si(e){let t=!1;S(e,(n,i)=>{j(n,(o,s)=>{if(t&&on(o))return s();t=!0,i(o,s)})})}function nn(e){let t=P;Tt((r,n)=>{let i=t(r);return H(i),()=>{}}),e(),Tt(t)}var Ze=0;function sn(e,t){let r=e._x_deferInit;r||(r=e._x_deferInit={pending:0,ownsIgnore:!e._x_ignore,queuedAttributes:new Map},r.ownsIgnore&&(e._x_ignore=!0),Ze++),r.pending++,Promise.resolve(t).catch(n=>{try{Y(n,e)}catch(i){setTimeout(()=>{throw i},0)}}).then(()=>Ai(e,r))}function Ai(e,t){t.pending--,!(t.pending>0)&&(Rr(),!(t.pending>0)&&e._x_deferInit===t&&(delete e._x_deferInit,t.ownsIgnore&&delete e._x_ignore,Ze--,e.isConnected&&(Ti(t),S(e))))}function an(e,t){if(Ze===0)return!1;let r=A(e,n=>n._x_deferInit);return r?(cn(r._x_deferInit,e,t.map(({name:n})=>n)),!0):!1}function cn(e,t,r){let n=e.queuedAttributes.get(t);(!n||n.marker!==t._x_marker)&&(n={marker:t._x_marker,names:new Set},e.queuedAttributes.set(t,n)),r.forEach(i=>n.names.add(i))}function Ti(e){e.queuedAttributes.forEach((t,r)=>{if(!r.isConnected||!r._x_marker||r._x_marker!==t.marker)return;let n=A(r,o=>o._x_deferInit);if(n){cn(n._x_deferInit,r,Array.from(t.names));return}let i=Array.from(t.names).filter(o=>r.hasAttribute(o)).map(o=>({name:o,value:r.getAttribute(o)}));i.length!==0&&ee(r,i).forEach(o=>o())})}F((e,t)=>{Ze!==0&&(!e||e.nodeType!==1||!t||t.nodeType!==1||A(e,r=>r._x_deferInit)&&(t._x_ignore=!0))});function te(e,t,r={},n={}){return e.dispatchEvent(new CustomEvent(t,{detail:r,bubbles:!0,composed:!0,cancelable:!0,...n}))}function T(e,...t){console.warn(`Alpine Warning: ${e}`,...t)}var ln=!1;function fn(){ln&&T("Alpine has already been initialized on this page. Calling Alpine.start() more than once can cause problems."),ln=!0,document.body||T("Unable to initialize. Trying to load Alpine before `<body>` is available. Did you forget to add `defer` in Alpine's `<script>` tag?"),te(document,"alpine:init"),te(document,"alpine:initializing"),we(),Nr(t=>S(t,j)),de(t=>R(t)),Be((t,r)=>{an(t,r)||ee(t,r).forEach(n=>n())});let e=t=>!re(t.parentElement,!0);Array.from(document.querySelectorAll(pn().join(","))).filter(e).forEach(t=>{S(t)}),te(document,"alpine:initialized"),setTimeout(()=>{Ni()})}var Ft=[],un=[];function dn(){return Ft.map(e=>e())}function pn(){return Ft.concat(un).map(e=>e())}function Qe(e){Ft.push(e)}function et(e){un.push(e)}function re(e,t=!1){return A(e,r=>{if((t?pn():dn()).some(i=>r.matches(i)))return!0})}function A(e,t){if(e){if(t(e))return e;if(e._x_teleportBack)return A(e._x_teleportBack,t);if(e.parentNode instanceof ShadowRoot)return A(e.parentNode.host,t);if(e.parentElement)return A(e.parentElement,t)}}function on(e){return dn().some(t=>e.matches(t))}var hn=[];function mn(e){hn.push(e)}var Oi=1;function S(e,t=j,r=()=>{}){A(e,n=>n._x_ignore)||Gr(()=>{t(e,(n,i)=>{n._x_marker||(r(n,i),hn.forEach(o=>o(n,i)),ee(n,n.attributes).forEach(o=>o()),n._x_ignore||(n._x_marker=Oi++),n._x_ignore&&i())})})}function R(e,t=j){t(e,r=>{Cr(r),Ot(r),delete r._x_marker})}function Ni(){[["ui","dialog",["[x-dialog], [x-popover]"]],["anchor","anchor",["[x-anchor]"]],["sort","sort",["[x-sort]"]]].forEach(([t,r,n])=>{Kr(r)||n.some(i=>{if(document.querySelector(i))return T(`found "${i}", but missing ${t} plugin`),!0})})}var Vt=[],$t=!1;function _e(e=()=>{}){return queueMicrotask(()=>{$t||setTimeout(()=>{tt()})}),new Promise(t=>{Vt.push(()=>{e(),t()})})}function tt(){for($t=!1;Vt.length;)Vt.shift()()}function _n(){$t=!0}function Te(e,t){return Array.isArray(t)?gn(e,t.join(" ")):typeof t=="object"&&t!==null?Ci(e,t):typeof t=="function"?Te(e,t()):gn(e,t)}function Bt(e){return e.split(/\s/).filter(Boolean)}function gn(e,t){let r=i=>Bt(i).filter(o=>!e.classList.contains(o)).filter(Boolean),n=i=>(e.classList.add(...i),()=>{e.classList.remove(...i)});return t=t===!0?t="":t||"",n(r(t))}function Ci(e,t){let r=Object.entries(t).flatMap(([s,a])=>a?Bt(s):!1).filter(Boolean),n=Object.entries(t).flatMap(([s,a])=>a?!1:Bt(s)).filter(Boolean),i=[],o=[];return n.forEach(s=>{e.classList.contains(s)&&(e.classList.remove(s),o.push(s))}),r.forEach(s=>{e.classList.contains(s)||(e.classList.add(s),i.push(s))}),()=>{o.forEach(s=>e.classList.add(s)),i.forEach(s=>e.classList.remove(s))}}function ne(e,t){return typeof t=="object"&&t!==null?Ri(e,t):Di(e,t)}function Ri(e,t){let r={};return Object.entries(t).forEach(([n,i])=>{r[n]=e.style[n],n.startsWith("--")||(n=Mi(n)),e.style.setProperty(n,i)}),setTimeout(()=>{e.style.length===0&&e.removeAttribute("style")}),()=>{ne(e,r)}}function Di(e,t){let r=e.getAttribute("style",t);return e.setAttribute("style",t),()=>{e.setAttribute("style",r||"")}}function Mi(e){return e.replace(/([a-z])([A-Z])/g,"$1-$2").toLowerCase()}function Oe(e,t=()=>{}){let r=!1;return function(){r?t.apply(this,arguments):(r=!0,e.apply(this,arguments))}}p("transition",(e,{value:t,modifiers:r,expression:n},{evaluate:i})=>{typeof n=="function"&&(n=i(n)),n!==!1&&(!n||typeof n=="boolean"?Pi(e,r,t):ki(e,n,t))});function ki(e,t,r){xn(e,Te,""),{enter:i=>{e._x_transition.enter.during=i},"enter-start":i=>{e._x_transition.enter.start=i},"enter-end":i=>{e._x_transition.enter.end=i},leave:i=>{e._x_transition.leave.during=i},"leave-start":i=>{e._x_transition.leave.start=i},"leave-end":i=>{e._x_transition.leave.end=i}}[r](t)}function Pi(e,t,r){xn(e,ne);let n=!t.includes("in")&&!t.includes("out")&&!r,i=n||t.includes("in")||["enter"].includes(r),o=n||t.includes("out")||["leave"].includes(r);t.includes("in")&&!n&&(t=t.filter((v,fe)=>fe<t.indexOf("out"))),t.includes("out")&&!n&&(t=t.filter((v,fe)=>fe>t.indexOf("out")));let s=!t.includes("opacity")&&!t.includes("scale"),a=s||t.includes("opacity"),c=s||t.includes("scale"),l=a?0:1,f=c?Ne(t,"scale",95)/100:1,u=Ne(t,"delay",0)/1e3,g=Ne(t,"origin","center"),y="opacity, transform",$=Ne(t,"duration",150)/1e3,d=Ne(t,"duration",75)/1e3,E="cubic-bezier(0.4, 0.0, 0.2, 1)";i&&(e._x_transition.enter.during={transformOrigin:g,transitionDelay:`${u}s`,transitionProperty:y,transitionDuration:`${$}s`,transitionTimingFunction:E},e._x_transition.enter.start={opacity:l,transform:`scale(${f})`},e._x_transition.enter.end={opacity:1,transform:"scale(1)"}),o&&(e._x_transition.leave.during={transformOrigin:g,transitionDelay:`${u}s`,transitionProperty:y,transitionDuration:`${d}s`,transitionTimingFunction:E},e._x_transition.leave.start={opacity:1,transform:"scale(1)"},e._x_transition.leave.end={opacity:l,transform:`scale(${f})`})}function xn(e,t,r={}){e._x_transition||(e._x_transition={enter:{during:r,start:r,end:r},leave:{during:r,start:r,end:r},in(n=()=>{},i=()=>{}){rt(e,t,{during:this.enter.during,start:this.enter.start,end:this.enter.end},n,i)},out(n=()=>{},i=()=>{}){rt(e,t,{during:this.leave.during,start:this.leave.start,end:this.leave.end},n,i)}})}window.Element.prototype._x_toggleAndCascadeWithTransitions=function(e,t,r,n){let i=document.visibilityState==="visible"?requestAnimationFrame:setTimeout,o=()=>i(r);if(t){e._x_transition&&(e._x_transition.enter||e._x_transition.leave)?e._x_transition.enter&&(Object.entries(e._x_transition.enter.during).length||Object.entries(e._x_transition.enter.start).length||Object.entries(e._x_transition.enter.end).length)?e._x_transition.in(r):o():e._x_transition?e._x_transition.in(r):o();return}e._x_hidePromise=e._x_transition?new Promise((s,a)=>{e._x_transition.out(()=>{},()=>s(n)),e._x_transitioning&&e._x_transitioning.beforeCancel(()=>a({isFromCancelledTransition:!0}))}):Promise.resolve(n),queueMicrotask(()=>{let s=yn(e);s?(s._x_hideChildren||(s._x_hideChildren=[]),s._x_hideChildren.push(e)):i(()=>{let a=c=>{let l=Promise.all([c._x_hidePromise,...(c._x_hideChildren||[]).map(a)]).then(([f])=>f?.());return delete c._x_hidePromise,delete c._x_hideChildren,l};a(e).catch(c=>{if(!c.isFromCancelledTransition)throw c})})})};function yn(e){let t=e.parentNode;if(t)return t._x_hidePromise?t:yn(t)}function rt(e,t,{during:r,start:n,end:i}={},o=()=>{},s=()=>{}){if(e._x_transitioning&&e._x_transitioning.cancel(),Object.keys(r).length===0&&Object.keys(n).length===0&&Object.keys(i).length===0){o(),s();return}let a,c,l;Ii(e,{start(){a=t(e,n)},during(){c=t(e,r)},before:o,end(){a(),l=t(e,i)},after:s,cleanup(){c(),l()}})}function Ii(e,t){let r,n,i,o=Oe(()=>{h(()=>{r=!0,n||t.before(),i||(t.end(),tt()),t.after(),e.isConnected&&t.cleanup(),delete e._x_transitioning})});e._x_transitioning={beforeCancels:[],beforeCancel(s){this.beforeCancels.push(s)},cancel:Oe(function(){for(;this.beforeCancels.length;)this.beforeCancels.shift()();o()}),finish:o},h(()=>{t.start(),t.during()}),_n(),requestAnimationFrame(()=>{if(r)return;let s=Number(getComputedStyle(e).transitionDuration.replace(/,.*/,"").replace("s",""))*1e3,a=Number(getComputedStyle(e).transitionDelay.replace(/,.*/,"").replace("s",""))*1e3;s===0&&(s=Number(getComputedStyle(e).animationDuration.replace("s",""))*1e3),h(()=>{t.before()}),n=!0,requestAnimationFrame(()=>{r||(h(()=>{t.end()}),tt(),setTimeout(e._x_transitioning.finish,s+a),i=!0)})})}function Ne(e,t,r){if(e.indexOf(t)===-1)return r;let n=e[e.indexOf(t)+1];if(!n||t==="scale"&&isNaN(n))return r;if(t==="duration"||t==="delay"){let i=n.match(/([0-9]+)ms/);if(i)return i[1]}return t==="origin"&&["top","right","left","center","bottom"].includes(e[e.indexOf(t)+2])?[n,e[e.indexOf(t)+2]].join(" "):n}function Ce(e,t,r,n=[]){switch(e._x_bindings||(e._x_bindings=D({})),e._x_bindings[t]=r,t=n.includes("camel")?Ui(t):t,t){case"value":Li(e,r);break;case"style":Fi(e,r);break;case"class":ji(e,r);break;case"selected":case"checked":Vi(e,t,r);break;default:Ht(e,t,r);break}}function Li(e,t){if(nt(e))e.attributes.value===void 0&&(e.value=t);else if(De(e))Number.isInteger(t)?e.value=t:!Array.isArray(t)&&typeof t!="boolean"&&![null,void 0].includes(t)?e.value=String(t):Array.isArray(t)?e.checked=t.some(r=>qi(r,e.value)):e.checked=!!t;else if(e.tagName==="SELECT")Hi(e,t);else if(e.tagName==="OPTION")Ht(e,"value",t);else{if(e.value===t&&(typeof t!="object"||t===null))return;e.value=t===void 0?"":t}}function ji(e,t){e._x_undoAddedClasses&&e._x_undoAddedClasses(),e._x_undoAddedClasses=Te(e,t)}function Fi(e,t){e._x_undoAddedStyles&&e._x_undoAddedStyles(),e._x_undoAddedStyles=ne(e,t)}function Vi(e,t,r){Ht(e,t,r),Bi(e,t,r)}function Ht(e,t,r){[null,void 0,!1].includes(r)&&Ki(t)?e.removeAttribute(t):(bn(t)&&(r=t),Wi(r)&&(r=JSON.stringify(r)),$i(e,t,r))}function $i(e,t,r){e.getAttribute(t)!=r&&e.setAttribute(t,r)}function Bi(e,t,r){e[t]!==r&&(e[t]=r)}function Hi(e,t){let r=[].concat(t).map(n=>n+"");Array.from(e.options).forEach(n=>{n.selected=r.includes(n.value)})}function Ui(e){return e.toLowerCase().replace(/-(\w)/g,(t,r)=>r.toUpperCase())}function qi(e,t){return e==t}function Re(e){return[1,"1","true","on","yes",!0].includes(e)?!0:[0,"0","false","off","no",!1].includes(e)?!1:e?Boolean(e):null}var zi=new Set(["allowfullscreen","async","autofocus","autoplay","checked","controls","default","defer","disabled","formnovalidate","inert","ismap","itemscope","loop","multiple","muted","nomodule","novalidate","open","playsinline","readonly","required","reversed","selected","shadowrootclonable","shadowrootdelegatesfocus","shadowrootserializable"]);function bn(e){return zi.has(e)}function Ki(e){return!["aria-pressed","aria-checked","aria-expanded","aria-selected"].includes(e)}function Wi(e){return typeof e=="object"&&e!==null}function En(e,t,r){return e._x_bindings&&e._x_bindings[t]!==void 0?e._x_bindings[t]:wn(e,t,r)}function vn(e,t,r,n=!0){if(e._x_bindings&&e._x_bindings[t]!==void 0)return e._x_bindings[t];if(e._x_inlineBindings&&e._x_inlineBindings[t]!==void 0){let i=e._x_inlineBindings[t];return i.extract=n,We(()=>M(e,i.expression))}return wn(e,t,r)}function wn(e,t,r){let n=e.getAttribute(t);return n===null?typeof r=="function"?r():r:n===""?!0:bn(t)?!![t,"true"].includes(n):n}function De(e){return e.type==="checkbox"||e.localName==="ui-checkbox"||e.localName==="ui-switch"}function nt(e){return e.type==="radio"||e.localName==="ui-radio"}function it(e,t){let r;return function(){let n=this,i=arguments,o=function(){r=null,e.apply(n,i)};clearTimeout(r),r=setTimeout(o,t)}}function ot(e,t){let r;return function(){let n=this,i=arguments;r||(e.apply(n,i),r=!0,setTimeout(()=>r=!1,t))}}function st({get:e,set:t},{get:r,set:n}){let i=!0,o,s,a=P(()=>{let c=e(),l=r();if(i)n(Ut(c)),i=!1;else{let f=JSON.stringify(c),u=JSON.stringify(l);f!==o?n(Ut(c)):f!==u&&t(Ut(l))}o=JSON.stringify(e()),s=JSON.stringify(r())});return()=>{ue(a),H(a)}}function Ut(e){return typeof e=="object"?JSON.parse(JSON.stringify(e)):e}function Sn(e){(Array.isArray(e)?e:[e]).forEach(r=>r(q))}var z={},An=!1;function Tn(e,t){if(An||(z=D(z),An=!0),t===void 0)return z[e];z[e]=t,typeof t=="object"&&t!==null&&t._x_interceptor?z[e]=t.initialize(z,e,e,()=>{}):pe(z[e]),typeof t=="object"&&t!==null&&t.hasOwnProperty("init")&&typeof t.init=="function"&&z[e].init()}function On(){return z}var Nn={};function Cn(e,t){let r=typeof t!="function"?()=>t:t;return e instanceof Element?qt(e,r()):(Nn[e]=r,()=>{})}function Rn(e){return Object.entries(Nn).forEach(([t,r])=>{Object.defineProperty(e,t,{get(){return(...n)=>r(...n)}})}),e}function qt(e,t,r){let n=[];for(;n.length;)n.pop()();let i=Object.entries(t).map(([s,a])=>({name:s,value:a})),o=jt(i);return i=i.map(s=>o.find(a=>a.name===s.name)?{name:`x-bind:${s.name}`,value:`"${s.value}"`}:s),ee(e,i,r).map(s=>{n.push(s.runCleanups),s()}),()=>{for(;n.length;)n.pop()()}}var Dn={};function Mn(e,t){Dn[e]=t}function kn(e,t){return Object.entries(Dn).forEach(([r,n])=>{Object.defineProperty(e,r,{get(){return(...i)=>n.bind(t)(...i)},enumerable:!1})}),e}var Gi={get reactive(){return D},get release(){return H},get effect(){return P},get raw(){return At},get transaction(){return Sr},version:"3.17.5",flushAndStopDeferringMutations:Mr,dontAutoEvaluateFunctions:We,disableEffectScheduling:Er,startObservingMutations:we,stopObservingMutations:Ct,setReactivityEngine:vr,onAttributeRemoved:He,onAttributesAdded:Be,closestDataStack:U,skipDuringClone:w,onlyDuringClone:Qr,addRootSelector:Qe,addInitSelector:et,setErrorHandler:jr,interceptClone:F,addScopeToNode:I,deferMutations:Dr,mapAttributes:me,evaluateLater:x,interceptInit:mn,initInterceptors:pe,injectMagics:G,setEvaluator:Vr,setRawEvaluator:Br,mergeProxies:L,extractProp:vn,findClosest:A,onElRemoved:de,closestRoot:re,destroyTree:R,interceptor:Ke,transition:rt,setStyles:ne,mutateDom:h,deferInit:sn,directive:p,entangle:st,throttle:ot,debounce:it,evaluate:M,evaluateRaw:Ur,initTree:S,nextTick:_e,prefixed:N,prefix:zr,plugin:Sn,magic:b,store:Tn,start:fn,clone:rn,cloneNode:tn,bound:En,$data:ze,watch:Ve,walk:j,data:Mn,bind:Cn},q=Gi;function zt(e){let t=Object.create(null);for(let r of e.split(","))t[r]=1;return r=>r in t}var Yi=Object.freeze({}),Ca=Object.freeze([]);var ge=Object.assign;var Ji=Object.prototype.hasOwnProperty,at=(e,t)=>Ji.call(e,t),xe=Array.isArray,ye=e=>Pn(e)==="[object Map]";var Xi=e=>typeof e=="string",be=e=>typeof e=="symbol",Ee=e=>e!==null&&typeof e=="object";var Zi=Object.prototype.toString,Pn=e=>Zi.call(e),Kt=e=>Pn(e).slice(8,-1);var ct=e=>Xi(e)&&e!=="NaN"&&e[0]!=="-"&&""+parseInt(e,10)===e;var lt=e=>{let t=Object.create(null);return r=>t[r]||(t[r]=e(r))},Qi=/-\w/g,Ra=lt(e=>e.replace(Qi,t=>t.slice(1).toUpperCase())),eo=/\B([A-Z])/g,Da=lt(e=>e.replace(eo,"-$1").toLowerCase()),Wt=lt(e=>e.charAt(0).toUpperCase()+e.slice(1)),Ma=lt(e=>e?`on${Wt(e)}`:""),J=(e,t)=>!Object.is(e,t);var to="itemscope,allowfullscreen,formnovalidate,ismap,nomodule,novalidate,readonly";var ka=zt(to+",async,autofocus,autoplay,controls,default,defer,disabled,inert,loop,open,required,reversed,scoped,seamless,checked,muted,multiple,selected");function oe(e,...t){console.warn(`[Vue warn] ${e}`,...t)}var Gt;var m;var Yt=new WeakSet,dt=class{constructor(t){this.fn=t,this.deps=void 0,this.depsTail=void 0,this.flags=5,this.next=void 0,this.cleanup=void 0,this.scheduler=void 0,Gt&&(Gt.active?Gt.effects.push(this):this.flags&=-2)}pause(){this.flags|=64}resume(){this.flags&64&&(this.flags&=-65,Yt.has(this)&&(Yt.delete(this),this.trigger()))}notify(){this.flags&2&&!(this.flags&32)||this.flags&8||ro(this)}run(){if(!(this.flags&1))return this.fn();this.flags|=2,In(this),Vn(this);let t=m,r=k;m=this,k=!0;try{return this.fn()}finally{m!==this&&oe("Active effect was not restored correctly - this is likely a Vue internal bug."),$n(this),m=t,k=r,this.flags&=-3}}stop(){if(this.flags&1){for(let t=this.deps;t;t=t.nextDep)lr(t);this.deps=this.depsTail=void 0,In(this),this.onStop&&this.onStop(),this.flags&=-2}}trigger(){this.flags&64?Yt.add(this):this.scheduler?this.scheduler():this.runIfDirty()}runIfDirty(){Zt(this)&&this.run()}get dirty(){return Zt(this)}},Fn=0,ke,Pe;function ro(e,t=!1){if(e.flags|=8,t){e.next=Pe,Pe=e;return}e.next=ke,ke=e}function ar(){Fn++}function cr(){if(--Fn>0)return;if(Pe){let t=Pe;for(Pe=void 0;t;){let r=t.next;t.next=void 0,t.flags&=-9,t=r}}let e;for(;ke;){let t=ke;for(ke=void 0;t;){let r=t.next;if(t.next=void 0,t.flags&=-9,t.flags&1)try{t.trigger()}catch(n){e||(e=n)}t=r}}if(e)throw e}function Vn(e){for(let t=e.deps;t;t=t.nextDep)t.version=-1,t.prevActiveLink=t.dep.activeLink,t.dep.activeLink=t}function $n(e){let t,r=e.depsTail,n=r;for(;n;){let i=n.prevDep;n.version===-1?(n===r&&(r=i),lr(n),io(n)):t=n,n.dep.activeLink=n.prevActiveLink,n.prevActiveLink=void 0,n=i}e.deps=t,e.depsTail=r}function Zt(e){for(let t=e.deps;t;t=t.nextDep)if(t.dep.version!==t.version||t.dep.computed&&(no(t.dep.computed)||t.dep.version!==t.version))return!0;return!!e._dirty}function no(e){if(e.flags&4&&!(e.flags&16)||(e.flags&=-17,e.globalVersion===pt)||(e.globalVersion=pt,!e.isSSR&&e.flags&128&&(!e.deps&&!e._dirty||!Zt(e))))return;e.flags|=2;let t=e.dep,r=m,n=k;m=e,k=!0;try{Vn(e);let i=e.fn(e._value);(t.version===0||J(i,e._value))&&(e.flags|=128,e._value=i,t.version++)}catch(i){throw t.version++,i}finally{m=r,k=n,$n(e),e.flags&=-3}}function lr(e,t=!1){let{dep:r,prevSub:n,nextSub:i}=e;if(n&&(n.nextSub=i,e.prevSub=void 0),i&&(i.prevSub=n,e.nextSub=void 0),r.subsHead===e&&(r.subsHead=i),r.subs===e&&(r.subs=n,!n&&r.computed)){r.computed.flags&=-5;for(let o=r.computed.deps;o;o=o.nextDep)lr(o,!0)}!t&&!--r.sc&&r.map&&r.map.delete(r.key)}function io(e){let{prevDep:t,nextDep:r}=e;t&&(t.nextDep=r,e.prevDep=void 0),r&&(r.prevDep=t,e.nextDep=void 0)}function Bn(e,t){e.effect instanceof dt&&(e=e.effect.fn);let r=new dt(e);t&&ge(r,t);try{r.run()}catch(i){throw r.stop(),i}let n=r.run.bind(r);return n.effect=r,n}function Hn(e){e.effect.stop()}var k=!0,Un=[];function oo(){Un.push(k),k=!1}function so(){let e=Un.pop();k=e===void 0?!0:e}function In(e){let{cleanup:t}=e;if(e.cleanup=void 0,t){let r=m;m=void 0;try{t()}finally{m=r}}}var pt=0,Qt=class{constructor(t,r){this.sub=t,this.dep=r,this.version=r.version,this.nextDep=this.prevDep=this.nextSub=this.prevSub=this.prevActiveLink=void 0}},er=class{constructor(t){this.computed=t,this.version=0,this.activeLink=void 0,this.subs=void 0,this.map=void 0,this.key=void 0,this.sc=0,this.__v_skip=!0,this.subsHead=void 0}track(t){if(!m||!k||m===this.computed)return;let r=this.activeLink;if(r===void 0||r.sub!==m)r=this.activeLink=new Qt(m,this),m.deps?(r.prevDep=m.depsTail,m.depsTail.nextDep=r,m.depsTail=r):m.deps=m.depsTail=r,qn(r);else if(r.version===-1&&(r.version=this.version,r.nextDep)){let n=r.nextDep;n.prevDep=r.prevDep,r.prevDep&&(r.prevDep.nextDep=n),r.prevDep=m.depsTail,r.nextDep=void 0,m.depsTail.nextDep=r,m.depsTail=r,m.deps===r&&(m.deps=n)}return m.onTrack&&m.onTrack(ge({effect:m},t)),r}trigger(t){this.version++,pt++,this.notify(t)}notify(t){ar();try{for(let r=this.subsHead;r;r=r.nextSub)r.sub.onTrigger&&!(r.sub.flags&8)&&r.sub.onTrigger(ge({effect:r.sub},t));for(let r=this.subs;r;r=r.prevSub)r.sub.notify()&&r.sub.dep.notify()}finally{cr()}}};function qn(e){if(e.dep.sc++,e.sub.flags&4){let t=e.dep.computed;if(t&&!e.dep.subs){t.flags|=20;for(let n=t.deps;n;n=n.nextDep)qn(n)}let r=e.dep.subs;r!==e&&(e.prevSub=r,r&&(r.nextSub=e)),e.dep.subsHead===void 0&&(e.dep.subsHead=e),e.dep.subs=e}}var tr=new WeakMap,ie=Symbol("Object iterate"),rr=Symbol("Map keys iterate"),Le=Symbol("Array iterate");function O(e,t,r){if(k&&m){let n=tr.get(e);n||tr.set(e,n=new Map);let i=n.get(r);i||(n.set(r,i=new er),i.map=n,i.key=r),i.track({target:e,type:t,key:r})}}function X(e,t,r,n,i,o){let s=tr.get(e);if(!s){pt++;return}let a=c=>{c&&c.trigger({target:e,type:t,key:r,newValue:n,oldValue:i,oldTarget:o})};if(ar(),t==="clear")s.forEach(a);else{let c=xe(e),l=c&&ct(r);if(c&&r==="length"){let f=Number(n);s.forEach((u,g)=>{(g==="length"||g===Le||!be(g)&&g>=f)&&a(u)})}else switch((r!==void 0||s.has(void 0))&&a(s.get(r)),l&&a(s.get(Le)),t){case"add":c?l&&a(s.get("length")):(a(s.get(ie)),ye(e)&&a(s.get(rr)));break;case"delete":c||(a(s.get(ie)),ye(e)&&a(s.get(rr)));break;case"set":ye(e)&&a(s.get(ie));break}}cr()}function ve(e){let t=_(e);return t===e?t:(O(t,"iterate",Le),ae(e)?t:t.map(ce))}function fr(e){return O(e=_(e),"iterate",Le),e}function V(e,t){return se(e)?Jn(e)?je(ce(t)):je(t):ce(t)}var ao={__proto__:null,[Symbol.iterator](){return Jt(this,Symbol.iterator,e=>V(this,e))},concat(...e){return ve(this).concat(...e.map(t=>xe(t)?ve(t):t))},entries(){return Jt(this,"entries",e=>(e[1]=V(this,e[1]),e))},every(e,t){return K(this,"every",e,t,void 0,arguments)},filter(e,t){return K(this,"filter",e,t,r=>r.map(n=>V(this,n)),arguments)},find(e,t){return K(this,"find",e,t,r=>V(this,r),arguments)},findIndex(e,t){return K(this,"findIndex",e,t,void 0,arguments)},findLast(e,t){return K(this,"findLast",e,t,r=>V(this,r),arguments)},findLastIndex(e,t){return K(this,"findLastIndex",e,t,void 0,arguments)},forEach(e,t){return K(this,"forEach",e,t,void 0,arguments)},includes(...e){return Xt(this,"includes",e)},indexOf(...e){return Xt(this,"indexOf",e)},join(e){return ve(this).join(e)},lastIndexOf(...e){return Xt(this,"lastIndexOf",e)},map(e,t){return K(this,"map",e,t,void 0,arguments)},pop(){return Me(this,"pop")},push(...e){return Me(this,"push",e)},reduce(e,...t){return Ln(this,"reduce",e,t)},reduceRight(e,...t){return Ln(this,"reduceRight",e,t)},shift(){return Me(this,"shift")},some(e,t){return K(this,"some",e,t,void 0,arguments)},splice(...e){return Me(this,"splice",e)},toReversed(){return ve(this).toReversed()},toSorted(e){return ve(this).toSorted(e)},toSpliced(...e){return ve(this).toSpliced(...e)},unshift(...e){return Me(this,"unshift",e)},values(){return Jt(this,"values",e=>V(this,e))}};function Jt(e,t,r){let n=fr(e),i=n[t]();return n!==e&&!ae(e)&&(i._next=i.next,i.next=()=>{let o=i._next();return o.done||(o.value=r(o.value)),o}),i}var co=Array.prototype;function K(e,t,r,n,i,o){let s=fr(e),a=s!==e&&!ae(e),c=s[t];if(c!==co[t]){let u=c.apply(e,o);return a?ce(u):u}let l=r;s!==e&&(a?l=function(u,g){return r.call(this,V(e,u),g,e)}:r.length>2&&(l=function(u,g){return r.call(this,u,g,e)}));let f=c.call(s,l,n);return a&&i?i(f):f}function Ln(e,t,r,n){let i=fr(e),o=i!==e&&!ae(e),s=r,a=!1;i!==e&&(o?(a=n.length===0,s=function(l,f,u){return a&&(a=!1,l=V(e,l)),r.call(this,l,V(e,f),u,e)}):r.length>3&&(s=function(l,f,u){return r.call(this,l,f,u,e)}));let c=i[t](s,...n);return a?V(e,c):c}function Xt(e,t,r){let n=_(e);O(n,"iterate",Le);let i=n[t](...r);return(i===-1||i===!1)&&Eo(r[0])?(r[0]=_(r[0]),n[t](...r)):i}function Me(e,t,r=[]){oo(),ar();let n=_(e)[t].apply(e,r);return cr(),so(),n}var lo=zt("__proto__,__v_isRef,__isVue"),zn=new Set(Object.getOwnPropertyNames(Symbol).filter(e=>e!=="arguments"&&e!=="caller").map(e=>Symbol[e]).filter(be));function fo(e){be(e)||(e=String(e));let t=_(this);return O(t,"has",e),t.hasOwnProperty(e)}var ht=class{constructor(t=!1,r=!1){this._isReadonly=t,this._isShallow=r}get(t,r,n){if(r==="__v_skip")return t.__v_skip;let i=this._isReadonly,o=this._isShallow;if(r==="__v_isReactive")return!i;if(r==="__v_isReadonly")return i;if(r==="__v_isShallow")return o;if(r==="__v_raw")return n===(i?o?yo:Gn:o?xo:Wn).get(t)||Object.getPrototypeOf(t)===Object.getPrototypeOf(n)?t:void 0;let s=xe(t);if(!i){let c;if(s&&(c=ao[r]))return c;if(r==="hasOwnProperty")return fo}let a=Reflect.get(t,r,Ie(t)?t:n);if((be(r)?zn.has(r):lo(r))||(i||O(t,"get",r),o))return a;if(Ie(a)){let c=s&&ct(r)?a:a.value;return i&&Ee(c)?sr(c):c}return Ee(a)?i?sr(a):mt(a):a}},nr=class extends ht{constructor(t=!1){super(!1,t)}set(t,r,n,i){let o=t[r],s=xe(t)&&ct(r);if(!this._isShallow){let l=se(o);if(!ae(n)&&!se(n)&&(o=_(o),n=_(n)),!s&&Ie(o)&&!Ie(n))return l?(oe(`Set operation on key "${String(r)}" failed: target is readonly.`,t[r]),!0):(o.value=n,!0)}let a=s?Number(r)<t.length:at(t,r),c=Reflect.set(t,r,n,Ie(t)?t:i);return t===_(i)&&c&&(a?J(n,o)&&X(t,"set",r,n,o):X(t,"add",r,n)),c}deleteProperty(t,r){let n=at(t,r),i=t[r],o=Reflect.deleteProperty(t,r);return o&&n&&X(t,"delete",r,void 0,i),o}has(t,r){let n=Reflect.has(t,r);return(!be(r)||!zn.has(r))&&O(t,"has",r),n}ownKeys(t){return O(t,"iterate",xe(t)?"length":ie),Reflect.ownKeys(t)}},ir=class extends ht{constructor(t=!1){super(!0,t)}set(t,r){return oe(`Set operation on key "${String(r)}" failed: target is readonly.`,t),!0}deleteProperty(t,r){return oe(`Delete operation on key "${String(r)}" failed: target is readonly.`,t),!0}},uo=new nr,po=new ir;var or=e=>e,ft=e=>Reflect.getPrototypeOf(e);function ho(e,t,r){return function(...n){let i=this.__v_raw,o=_(i),s=ye(o),a=e==="entries"||e===Symbol.iterator&&s,c=e==="keys"&&s,l=i[e](...n),f=r?or:t?je:ce;return!t&&O(o,"iterate",c?rr:ie),ge(Object.create(l),{next(){let{value:u,done:g}=l.next();return g?{value:u,done:g}:{value:a?[f(u[0]),f(u[1])]:f(u),done:g}}})}}function ut(e){return function(...t){{let r=t[0]?`on key "${t[0]}" `:"";oe(`${Wt(e)} operation ${r}failed: target is readonly.`,_(this))}return e==="delete"?!1:e==="clear"?void 0:this}}function mo(e,t){let r={get(i){let o=this.__v_raw,s=_(o),a=_(i);e||(J(i,a)&&O(s,"get",i),O(s,"get",a));let{has:c}=ft(s),l=t?or:e?je:ce;if(c.call(s,i))return l(o.get(i));if(c.call(s,a))return l(o.get(a));o!==s&&o.get(i)},get size(){let i=this.__v_raw;return!e&&O(_(i),"iterate",ie),i.size},has(i){let o=this.__v_raw,s=_(o),a=_(i);return e||(J(i,a)&&O(s,"has",i),O(s,"has",a)),i===a?o.has(i):o.has(i)||o.has(a)},forEach(i,o){let s=this,a=s.__v_raw,c=_(a),l=t?or:e?je:ce;return!e&&O(c,"iterate",ie),a.forEach((f,u)=>i.call(o,l(f),l(u),s))}};return ge(r,e?{add:ut("add"),set:ut("set"),delete:ut("delete"),clear:ut("clear")}:{add(i){let o=_(this),s=ft(o),a=_(i),c=!t&&!ae(i)&&!se(i)?a:i;return s.has.call(o,c)||J(i,c)&&s.has.call(o,i)||J(a,c)&&s.has.call(o,a)||(o.add(c),X(o,"add",c,c)),this},set(i,o){!t&&!ae(o)&&!se(o)&&(o=_(o));let s=_(this),{has:a,get:c}=ft(s),l=a.call(s,i);l?jn(s,a,i):(i=_(i),l=a.call(s,i));let f=c.call(s,i);return s.set(i,o),l?J(o,f)&&X(s,"set",i,o,f):X(s,"add",i,o),this},delete(i){let o=_(this),{has:s,get:a}=ft(o),c=s.call(o,i);c?jn(o,s,i):(i=_(i),c=s.call(o,i));let l=a?a.call(o,i):void 0,f=o.delete(i);return c&&X(o,"delete",i,void 0,l),f},clear(){let i=_(this),o=i.size!==0,s=ye(i)?new Map(i):new Set(i),a=i.clear();return o&&X(i,"clear",void 0,void 0,s),a}}),["keys","values","entries",Symbol.iterator].forEach(i=>{r[i]=ho(i,e,t)}),r}function Kn(e,t){let r=mo(e,t);return(n,i,o)=>i==="__v_isReactive"?!e:i==="__v_isReadonly"?e:i==="__v_raw"?n:Reflect.get(at(r,i)&&i in n?r:n,i,o)}var _o={get:Kn(!1,!1)};var go={get:Kn(!0,!1)};function jn(e,t,r){let n=_(r);if(n!==r&&t.call(e,n)){let i=Kt(e);oe(`Reactive ${i} contains both the raw and reactive versions of the same object${i==="Map"?" as keys":""}, which can lead to inconsistencies. Avoid differentiating between the raw and reactive versions of an object and only use the reactive version if possible.`)}}var Wn=new WeakMap,xo=new WeakMap,Gn=new WeakMap,yo=new WeakMap;function bo(e){switch(e){case"Object":case"Array":return 1;case"Map":case"Set":case"WeakMap":case"WeakSet":return 2;default:return 0}}function mt(e){return se(e)?e:Yn(e,!1,uo,_o,Wn)}function sr(e){return Yn(e,!0,po,go,Gn)}function Yn(e,t,r,n,i){if(!Ee(e))return oe(`value cannot be made ${t?"readonly":"reactive"}: ${String(e)}`),e;if(e.__v_raw&&!(t&&e.__v_isReactive)||e.__v_skip||!Object.isExtensible(e))return e;let o=i.get(e);if(o)return o;let s=bo(Kt(e));if(s===0)return e;let a=new Proxy(e,s===2?n:r);return i.set(e,a),a}function Jn(e){return se(e)?Jn(e.__v_raw):!!(e&&e.__v_isReactive)}function se(e){return!!(e&&e.__v_isReadonly)}function ae(e){return!!(e&&e.__v_isShallow)}function Eo(e){return e?!!e.__v_raw:!1}function _(e){let t=e&&e.__v_raw;return t?_(t):e}var ce=e=>Ee(e)?mt(e):e,je=e=>Ee(e)?sr(e):e;function Ie(e){return e?e.__v_isRef===!0:!1}b("nextTick",()=>_e);b("dispatch",e=>te.bind(te,e));b("watch",(e,{evaluateLater:t,cleanup:r})=>(n,i)=>{let o=t(n),a=Ve(()=>{let c;return o(l=>c=l),c},i);r(a)});b("store",On);b("data",e=>ze(e));b("root",e=>re(e));b("refs",e=>(e._x_refs_proxy||(e._x_refs_proxy=L(vo(e))),e._x_refs_proxy));function vo(e){let t=[];return A(e,r=>{r._x_refs&&t.push(r._x_refs)}),t}var ur={};function dr(e){return ur[e]||(ur[e]=0),++ur[e]}function Xn(e,t){return A(e,r=>{if(r._x_ids&&r._x_ids[t])return!0})}function Zn(e,t){e._x_ids||(e._x_ids={}),e._x_ids[t]||(e._x_ids[t]=dr(t))}b("id",(e,{cleanup:t})=>(r,n=null)=>{let i=`${r}${n?`-${n}`:""}`;return wo(e,i,t,()=>{let o=Xn(e,r),s=o?o._x_ids[r]:dr(r);return n?`${r}-${s}-${n}`:`${r}-${s}`})});F((e,t)=>{e._x_id&&(t._x_id=e._x_id)});function wo(e,t,r,n){if(e._x_id||(e._x_id={}),e._x_id[t])return e._x_id[t];let i=n();return e._x_id[t]=i,r(()=>{delete e._x_id[t]}),i}b("el",e=>e);Qn("Focus","focus","focus");Qn("Persist","persist","persist");function Qn(e,t,r){b(t,n=>T(`You can't use [$${t}] without first installing the "${e}" plugin here: https://alpinejs.dev/plugins/${r}`,n))}p("modelable",(e,{expression:t},{effect:r,evaluateLater:n,cleanup:i})=>{let o=n(t),s=()=>{let f;return o(u=>f=u),f},a=n(`${t} = __placeholder`),c=f=>a(()=>{},{scope:{__placeholder:f}}),l=s();c(l),queueMicrotask(()=>{if(!e._x_model)return;e._x_removeModelListeners.default();let f=e._x_model.get,u=e._x_model.setWithModifiers,g=st({get(){return f()},set(y){u(y)}},{get(){return s()},set(y){c(y)}});i(g)})});p("teleport",(e,{modifiers:t,expression:r},{cleanup:n})=>{e.tagName.toLowerCase()!=="template"&&T("x-teleport can only be used on a <template> tag",e);let i=ei(r),o=e.content.cloneNode(!0).firstElementChild;e._x_teleport=o,o._x_teleportBack=e,e.setAttribute("data-teleport-template",!0),o.setAttribute("data-teleport-target",!0),e._x_forwardEvents&&e._x_forwardEvents.forEach(a=>{o.addEventListener(a,c=>{c.stopPropagation(),e.dispatchEvent(new c.constructor(c.type,c))})}),I(o,{},e);let s=(a,c,l)=>{l.includes("prepend")?c.parentNode.insertBefore(a,c):l.includes("append")?c.parentNode.insertBefore(a,c.nextSibling):c.appendChild(a)};h(()=>{w(()=>{s(o,i,t),S(o)})()}),e._x_teleportPutBack=()=>{let a=ei(r);h(()=>{s(e._x_teleport,a,t)})},n(()=>h(()=>{o.remove(),R(o)}))});var So=document.createElement("div");function ei(e){let t=w(()=>document.querySelector(e),()=>So)();return t||T(`Cannot find x-teleport element for selector: "${e}"`),t}var ti=()=>{};ti.inline=(e,{modifiers:t},{cleanup:r})=>{t.includes("self")?e._x_ignoreSelf=!0:e._x_ignore=!0,r(()=>{t.includes("self")?delete e._x_ignoreSelf:delete e._x_ignore})};p("ignore",ti);p("effect",w((e,{expression:t},{effect:r})=>{r(x(e,t))}));function W(e,t,r,n){let i=e,o=c=>n(c),s={},a=(c,l)=>f=>l(c,f);return r.includes("dot")&&(t=Ao(t)),r.includes("camel")&&(t=To(t)),r.includes("capture")&&(s.capture=!0),r.includes("window")&&(i=window),r.includes("document")&&(i=document),r.includes("passive")&&(s.passive=r[r.indexOf("passive")+1]!=="false"),o=pr(r,o),r.includes("prevent")&&(o=a(o,(c,l)=>{l.preventDefault(),c(l)})),r.includes("stop")&&(o=a(o,(c,l)=>{l.stopPropagation(),c(l)})),r.includes("once")&&(o=a(o,(c,l)=>{c(l),i.removeEventListener(t,o,s)})),(r.includes("away")||r.includes("outside"))&&(i=document,o=a(o,(c,l)=>{e.contains(l.target)||l.target.isConnected!==!1&&(e.offsetWidth<1&&e.offsetHeight<1||e._x_isShown!==!1&&c(l))})),r.includes("self")&&(o=a(o,(c,l)=>{l.target===e&&c(l)})),t==="submit"&&(o=a(o,(c,l)=>{l.target._x_pendingModelUpdates&&l.target._x_pendingModelUpdates.forEach(f=>f()),c(l)})),(No(t)||ni(t))&&(o=a(o,(c,l)=>{Ro(l,r)||c(l)})),i.addEventListener(t,o,s),()=>{i.removeEventListener(t,o,s)}}function pr(e,t){if(e.includes("debounce")){let r=e[e.indexOf("debounce")+1]||"invalid-wait",n=_t(r.split("ms")[0])?Number(r.split("ms")[0]):250;t=it(t,n)}if(e.includes("throttle")){let r=e[e.indexOf("throttle")+1]||"invalid-wait",n=_t(r.split("ms")[0])?Number(r.split("ms")[0]):250;t=ot(t,n)}return t}function Ao(e){return e.replace(/-/g,".")}function To(e){return e.toLowerCase().replace(/-(\w)/g,(t,r)=>r.toUpperCase())}function _t(e){return!Array.isArray(e)&&!isNaN(e)}function Oo(e){return[" ","_"].includes(e)?e:e.replace(/([a-z])([A-Z])/g,"$1-$2").replace(/[_\s]/,"-").toLowerCase()}function No(e){return["keydown","keyup"].includes(e)}function ni(e){return["contextmenu","click","mouse"].some(t=>e.includes(t))}var Co=["window","document","prevent","stop","once","capture","self","away","outside","passive","dot","camel","preserve-scroll","blur","change","lazy","number","boolean","trim","fill","unintrusive","parent"];function Ro(e,t){let r=t.filter((o,s)=>o==="false"&&t[s-1]==="passive"?!1:!Co.includes(o));if(r.includes("debounce")){let o=r.indexOf("debounce");r.splice(o,_t((r[o+1]||"invalid-wait").split("ms")[0])?2:1)}if(r.includes("throttle")){let o=r.indexOf("throttle");r.splice(o,_t((r[o+1]||"invalid-wait").split("ms")[0])?2:1)}if(r.length===0||r.length===1&&ri(e.key).includes(r[0]))return!1;let i=["ctrl","shift","alt","meta","cmd","super"].filter(o=>r.includes(o));return r=r.filter(o=>!i.includes(o)),!(i.length>0&&i.filter(s=>((s==="cmd"||s==="super")&&(s="meta"),e[`${s}Key`])).length===i.length&&(ni(e.type)||ri(e.key).includes(r[0])))}function ri(e){if(!e)return[];e=Oo(e);let t={ctrl:"control",slash:"/",space:" ",spacebar:" ",cmd:"meta",esc:"escape",up:"arrow-up",down:"arrow-down",left:"arrow-left",right:"arrow-right",period:".",comma:",",equal:"=",minus:"-",underscore:"_"};return t[e]=e,Object.keys(t).map(r=>{if(t[r]===e)return r}).filter(r=>r)}p("model",(e,{modifiers:t,expression:r},{effect:n,cleanup:i})=>{let o=e;t.includes("parent")&&(o=A(e,d=>d!==e));let s=x(o,r),a;typeof r=="string"?a=x(o,`${r} = __placeholder`):typeof r=="function"&&typeof r()=="string"?a=x(o,`${r()} = __placeholder`):a=()=>{};let c=()=>{let d;return s(E=>d=E),ii(d)?d.get():d},l=d=>{let E;s(v=>E=v),ii(E)?E.set(d):a(()=>{},{scope:{__placeholder:d}})};typeof r=="string"&&e.type==="radio"&&h(()=>{e.hasAttribute("name")||e.setAttribute("name",r)});let f=t.includes("change")||t.includes("lazy"),u=t.includes("blur"),g=t.includes("enter"),y=f||u||g,$;if(C)$=()=>{};else if(y){let d=[],E=v=>l(gt(e,t,v,c()));if(f&&d.push(W(e,"change",t,E)),u&&(d.push(W(e,"blur",t,E)),e.form)){let v=e.form,fe=()=>E({target:e});v._x_pendingModelUpdates||(v._x_pendingModelUpdates=[]),v._x_pendingModelUpdates.push(fe),i(()=>{v._x_pendingModelUpdates&&v._x_pendingModelUpdates.splice(v._x_pendingModelUpdates.indexOf(fe),1)})}g&&d.push(W(e,"keydown",t,v=>{v.key==="Enter"&&E(v)})),$=()=>d.forEach(v=>v())}else{let d=e.tagName.toLowerCase()==="select"||["checkbox","radio"].includes(e.type)?"change":"input";$=W(e,d,t,E=>{l(gt(e,t,E,c()))})}if(t.includes("fill")&&([void 0,null,""].includes(c())||De(e)&&Array.isArray(c())||e.tagName.toLowerCase()==="select"&&e.multiple)&&l(gt(e,t,{target:e},c())),e._x_removeModelListeners||(e._x_removeModelListeners={}),e._x_removeModelListeners.default=$,i(()=>e._x_removeModelListeners.default()),e.form){let d=W(e.form,"reset",[],E=>{_e(()=>e._x_model&&e._x_model.set(gt(e,t,{target:e},c())))});i(()=>d())}if(e._x_model={get(){return c()},set(d){l(d)},setWithModifiers:pr(t,l)},e._x_forceModelUpdate=d=>{d===void 0&&typeof r=="string"&&r.match(/\./)&&(d=""),h(()=>{De(e)?Array.isArray(d)?e.checked=d.some(E=>E==e.value):e.checked=!!d:nt(e)?typeof d=="boolean"?e.checked=Re(e.value)===d:e.checked=e.value==d:Ce(e,"value",d)})},e.tagName==="SELECT"){let d=new MutationObserver(()=>{e._x_forceModelUpdate(c())});d.observe(e,{childList:!0}),i(()=>d.disconnect())}n(()=>{let d=c();t.includes("unintrusive")&&document.activeElement.isSameNode(e)||e._x_forceModelUpdate(d)})});function gt(e,t,r,n){return h(()=>{if(r instanceof CustomEvent&&r.detail!==void 0)return r.detail!==null&&r.detail!==void 0?r.detail:r.target.value;if(De(e))if(Array.isArray(n)){let i=null;return t.includes("number")?i=hr(r.target.value):t.includes("boolean")?i=Re(r.target.value):i=r.target.value,r.target.checked?n.includes(i)?n:n.concat([i]):n.filter(o=>!Do(o,i))}else return r.target.checked;else{if(e.tagName.toLowerCase()==="select"&&e.multiple)return t.includes("number")?Array.from(r.target.selectedOptions).map(i=>{let o=i.value||i.text;return hr(o)}):t.includes("boolean")?Array.from(r.target.selectedOptions).map(i=>{let o=i.value||i.text;return Re(o)}):Array.from(r.target.selectedOptions).map(i=>i.value||i.text);{let i;return nt(e)?r.target.checked?i=r.target.value:i=n:i=r.target.value,t.includes("number")?hr(i):t.includes("boolean")?Re(i):t.includes("trim")?i.trim():i}}})}function hr(e){let t=e?parseFloat(e):null;return Mo(t)?t:e}function Do(e,t){return e==t}function Mo(e){return!Array.isArray(e)&&!isNaN(e)}function ii(e){return e!==null&&typeof e=="object"&&typeof e.get=="function"&&typeof e.set=="function"}p("cloak",e=>{if(C)return e.removeAttribute(N("cloak"));queueMicrotask(()=>h(()=>e.removeAttribute(N("cloak"))))});et(()=>`[${N("init")}]`);p("init",w((e,{expression:t},{evaluate:r})=>typeof t=="string"?!!t.trim()&&r(t,{},!1):r(t,{},!1)));p("text",(e,{expression:t},{effect:r,evaluateLater:n})=>{let i=n(t);r(()=>{i(o=>{h(()=>{e.textContent=o})})})});p("html",(e,{expression:t},{effect:r,evaluateLater:n})=>{let i=n(t);r(()=>{i(o=>{h(()=>{Array.from(e.children).forEach(s=>R(s)),e.innerHTML=o??"",e._x_ignoreSelf=!0,S(e),delete e._x_ignoreSelf})})},{priority:"structural"})});me(Ye(":",Je(N("bind:"))));var oi=(e,{value:t,modifiers:r,expression:n,original:i},{effect:o,cleanup:s})=>{if(!t){let c={};Rn(c),x(e,n)(f=>{qt(e,f,i)},{scope:c});return}if(t==="key")return ko(e,n);if(e._x_inlineBindings&&e._x_inlineBindings[t]&&e._x_inlineBindings[t].extract)return;let a=x(e,n);o(()=>a(c=>{c===void 0&&typeof n=="string"&&n.match(/\./)&&(c=""),h(()=>Ce(e,t,c,r))})),s(()=>{e._x_undoAddedClasses&&e._x_undoAddedClasses(),e._x_undoAddedStyles&&e._x_undoAddedStyles()})};oi.inline=(e,{value:t,modifiers:r,expression:n})=>{t&&(e._x_inlineBindings||(e._x_inlineBindings={}),e._x_inlineBindings[t]={expression:n,extract:!1})};p("bind",oi);function ko(e,t){e._x_keyExpression=t}Qe(()=>`[${N("data")}]`);var le=Symbol();p("data",(e,{expression:t},{cleanup:r})=>{if(Io(e))return;let n=e[le];if(n?.expression===t)return;t=t===""?"{}":t;let i={};G(i,e);let o={};kn(o,i);let s=M(e,t,{scope:o});(s===void 0||s===!0)&&(s={}),G(s,e);let a;if(n?.reactiveData){a=n.reactiveData,Po(a,s);let l={expression:t};e[le]=l,queueMicrotask(()=>{e[le]===l&&delete e[le]})}else a=D(s);pe(a,r);let c=I(e,a);w(()=>{a.init&&M(e,a.init)})(),r(()=>{a.destroy&&M(e,a.destroy),c();let l={reactiveData:a};e[le]=l,queueMicrotask(()=>{e[le]===l&&delete e[le]})})});function Po(e,t){Object.keys(t).forEach(r=>{let n=Object.getOwnPropertyDescriptor(t,r),i=Object.getOwnPropertyDescriptor(e,r);n.get||n.set||i?.get||i?.set?(i&&delete e[r],i||(e[r]=void 0),n.get||n.set?Object.defineProperty(e,r,n):e[r]=t[r]):e[r]=t[r]}),Object.keys(e).filter(r=>!Object.prototype.hasOwnProperty.call(t,r)).forEach(r=>delete e[r])}F((e,t)=>{e._x_dataStack&&(t._x_dataStack=e._x_dataStack,t.setAttribute("data-has-alpine-state",!0))});function Io(e){return C?Xe?!0:e.hasAttribute("data-has-alpine-state"):!1}p("show",(e,{modifiers:t,expression:r},{effect:n})=>{let i=x(e,r);e._x_doHide||(e._x_doHide=()=>{h(()=>{e.style.setProperty("display","none",t.includes("important")?"important":void 0)})}),e._x_doShow||(e._x_doShow=()=>{h(()=>{e.style.length===1&&e.style.display==="none"?e.removeAttribute("style"):e.style.removeProperty("display")})});let o=()=>{e._x_doHide(),e._x_isShown=!1},s=()=>{e._x_doShow(),e._x_isShown=!0},a=()=>setTimeout(s),c=Oe(u=>u?s():o(),u=>{typeof e._x_toggleAndCascadeWithTransitions=="function"?e._x_toggleAndCascadeWithTransitions(e,u,s,o):u?a():o()}),l,f=!0;n(()=>i(u=>{!f&&u===l||(t.includes("immediate")&&(u?a():o()),c(u),l=u,f=!1)}))});p("for",w((e,{expression:t},{effect:r,cleanup:n})=>{let i=Fo(t),o=x(e,i.items),s=x(e,e._x_keyExpression||"index");e._x_lookup=new Map,r(()=>jo(e,i,o,s),{priority:"structural"}),n(()=>{e._x_lookup.forEach(a=>h(()=>{R(a),a.remove()})),delete e._x_lookup,delete e._x_lastRenderedEl})}));function Lo(e){return t=>{Object.entries(t).forEach(([r,n])=>{e[r]=n})}}function jo(e,t,r,n){r(i=>{$o(i)&&(i=Array.from({length:i},(l,f)=>f+1)),i==null&&(i=[]),i instanceof Set&&(i=Array.from(i)),i instanceof Map&&(i=Array.from(i));let o=e._x_lookup,s=new Map;e._x_lookup=s;let a=Bo(i),c=Object.entries(i).map(([l,f])=>{a||(l=parseInt(l));let u=Vo(t,f,l,i),g;return n(y=>{typeof y=="object"&&T("x-for key cannot be an object, it must be a string or an integer",e),o.has(y)&&(s.set(y,o.get(y)),o.delete(y)),g=y},{scope:{index:l,...u}}),[g,u]});h(()=>{o.forEach(u=>{R(u),u.remove()});let l=new Set,f=e;c.forEach(([u,g])=>{if(s.has(u)){let d=s.get(u);d._x_refreshXForScope(g),f.nextElementSibling!==d&&(f.nextElementSibling&&d.replaceWith(f.nextElementSibling),f.after(d)),f=d,d._x_currentIfEl&&(d.nextElementSibling!==d._x_currentIfEl&&f.after(d._x_currentIfEl),f=d._x_currentIfEl);return}e.content.children.length>1&&T("x-for templates require a single root element, additional elements will be ignored.",e);let y=document.importNode(e.content,!0).firstElementChild,$=D(g);I(y,$,e),y._x_refreshXForScope=Lo($),s.set(u,y),l.add(y),f.after(y),f=y}),l.forEach(u=>S(u)),f!==e?e._x_lastRenderedEl=f:delete e._x_lastRenderedEl})})}function Fo(e){let t=/,([^,\}\]]*)(?:,([^,\}\]]*))?$/,r=/^\s*\(|\)\s*$/g,n=/([\s\S]*?)\b(?:in|of)\b([\s\S]*)/,i=e.match(n);if(!i)return;let o={};o.items=i[2].trim();let s=i[1].replace(r,"").trim(),a=s.match(t);return a?(o.item=s.replace(t,"").trim(),o.index=a[1].trim(),a[2]&&(o.collection=a[2].trim())):o.item=s,o}function Vo(e,t,r,n){let i={};return/^\[.*\]$/.test(e.item)&&Array.isArray(t)?e.item.replace("[","").replace("]","").split(",").map(s=>s.trim()).forEach((s,a)=>{i[s]=t[a]}):/^\{.*\}$/.test(e.item)&&!Array.isArray(t)&&typeof t=="object"?e.item.replace("{","").replace("}","").split(",").map(s=>s.trim()).forEach(s=>{i[s]=t[s]}):i[e.item]=t,e.index&&(i[e.index]=r),e.collection&&(i[e.collection]=n),i}function $o(e){return typeof e!="object"&&!isNaN(e)}function Bo(e){return typeof e=="object"&&!Array.isArray(e)}function si(){}si.inline=(e,{expression:t},{cleanup:r})=>{let n=re(e);n&&(n._x_refs||(n._x_refs={}),n._x_refs[t]=e,r(()=>delete n._x_refs[t]))};p("ref",si);p("if",w((e,{expression:t},{effect:r,cleanup:n})=>{e.tagName.toLowerCase()!=="template"&&T("x-if can only be used on a <template> tag",e);let i=x(e,t),o=()=>{if(e._x_currentIfEl)return e._x_currentIfEl;let a=e.content.cloneNode(!0).firstElementChild;return I(a,{},e),h(()=>{e.after(a),S(a)}),e._x_currentIfEl=a,e._x_lastRenderedEl=a,e._x_undoIf=()=>{h(()=>{R(a),a.remove()}),delete e._x_currentIfEl,delete e._x_lastRenderedEl},a},s=()=>{e._x_undoIf&&(e._x_undoIf(),delete e._x_undoIf)};r(()=>i(a=>{a?o():s()}),{priority:"structural"}),n(()=>e._x_undoIf&&e._x_undoIf())}));p("id",(e,{expression:t},{evaluate:r})=>{r(t).forEach(i=>Zn(e,i))});F((e,t)=>{e._x_ids&&(t._x_ids=e._x_ids)});me(Ye("@",Je(N("on:"))));p("on",w((e,{value:t,modifiers:r,expression:n},{cleanup:i})=>{let o=n?x(e,n):()=>{};e.tagName.toLowerCase()==="template"&&(e._x_forwardEvents||(e._x_forwardEvents=[]),e._x_forwardEvents.includes(t)||e._x_forwardEvents.push(t));let s=W(e,t,r,a=>{o(()=>{},{scope:{$event:a},params:[a]})});i(()=>s())}));xt("Collapse","collapse","collapse");xt("Intersect","intersect","intersect");xt("Focus","trap","focus");xt("Mask","mask","mask");function xt(e,t,r){p(t,n=>T(`You can't use [x-${t}] without first installing the "${e}" plugin here: https://alpinejs.dev/plugins/${r}`,n))}q.setEvaluator(Hr);q.setRawEvaluator(qr);q.setReactivityEngine({reactive:mt,effect:(e,t={})=>{let r;return r=Bn(e,{scheduler:()=>{r&&(t.scheduler?t.scheduler(r):r())}}),r},release:Hn,raw:_});var mr=q;window.Alpine=mr;queueMicrotask(()=>{mr.start()});})();
+/*! Bundled license information:
+
+@vue/shared/dist/shared.esm-bundler.js:
+  (**
+  * @vue/shared v3.5.41
+  * (c) 2018-present Yuxi (Evan) You and Vue contributors
+  * @license MIT
+  **)
+
+@vue/reactivity/dist/reactivity.esm-bundler.js:
+  (**
+  * @vue/reactivity v3.5.41
+  * (c) 2018-present Yuxi (Evan) You and Vue contributors
+  * @license MIT
+  **)
+*/
+</script>
+</body>
+</html>
