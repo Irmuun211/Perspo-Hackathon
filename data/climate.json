@@ -1,0 +1,61 @@
+{
+  "updated": "2026-11-14T11:19:57+00:00",
+  "source": "NASA POWER daily point API, community AG",
+  "period": {
+    "start": 2001,
+    "end": 2025
+  },
+  "locations": {
+    "zuunkharaa": {
+      "name": "Zuunkharaa",
+      "aimag": "Selenge",
+      "lat": 48.88,
+      "lon": 106.82,
+      "elev": 1229,
+      "summerRain": 221,
+      "dryRain": 159,
+      "ffd": 104,
+      "julyT": 18.1,
+      "springWind": 2.2,
+      "rainMin": 77,
+      "rainMax": 363,
+      "ffdMin": 75,
+      "ffdMax": 126,
+      "yearsUsed": 25
+    },
+    "darkhan": {
+      "name": "Darkhan",
+      "aimag": "Darkhan-Uul",
+      "lat": 49.49,
+      "lon": 105.95,
+      "elev": 912,
+      "summerRain": 212,
+      "dryRain": 152,
+      "ffd": 113,
+      "julyT": 19.9,
+      "springWind": 2.9,
+      "rainMin": 99,
+      "rainMax": 349,
+      "ffdMin": 84,
+      "ffdMax": 134,
+      "yearsUsed": 25
+    },
+    "bulgan": {
+      "name": "Bulgan",
+      "aimag": "Bulgan",
+      "lat": 48.81,
+      "lon": 103.53,
+      "elev": 1340,
+      "summerRain": 247,
+      "dryRain": 187,
+      "ffd": 105,
+      "julyT": 17.8,
+      "springWind": 3.0,
+      "rainMin": 107,
+      "rainMax": 379,
+      "ffdMin": 75,
+      "ffdMax": 129,
+      "yearsUsed": 25
+    }
+  }
+}
